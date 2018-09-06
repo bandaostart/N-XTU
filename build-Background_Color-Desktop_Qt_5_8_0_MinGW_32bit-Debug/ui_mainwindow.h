@@ -14,7 +14,10 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
@@ -33,6 +36,10 @@ public:
     QTextEdit *textEdit;
     QPushButton *colorButton;
     QComboBox *comboBox;
+    QLineEdit *lineEdit;
+    QLineEdit *lineEdit_2;
+    QLabel *label;
+    QGraphicsView *graphicsView;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -52,10 +59,23 @@ public:
         textEdit->setGeometry(QRect(260, 30, 104, 21));
         colorButton = new QPushButton(centralWidget);
         colorButton->setObjectName(QStringLiteral("colorButton"));
-        colorButton->setGeometry(QRect(280, 60, 75, 23));
+        colorButton->setGeometry(QRect(90, 30, 75, 21));
         comboBox = new QComboBox(centralWidget);
         comboBox->setObjectName(QStringLiteral("comboBox"));
-        comboBox->setGeometry(QRect(90, 30, 69, 22));
+        comboBox->setGeometry(QRect(290, 140, 69, 22));
+        lineEdit = new QLineEdit(centralWidget);
+        lineEdit->setObjectName(QStringLiteral("lineEdit"));
+        lineEdit->setGeometry(QRect(80, 190, 113, 20));
+        lineEdit_2 = new QLineEdit(centralWidget);
+        lineEdit_2->setObjectName(QStringLiteral("lineEdit_2"));
+        lineEdit_2->setGeometry(QRect(220, 240, 61, 20));
+        label = new QLabel(centralWidget);
+        label->setObjectName(QStringLiteral("label"));
+        label->setGeometry(QRect(310, 230, 81, 31));
+        label->setFocusPolicy(Qt::StrongFocus);
+        graphicsView = new QGraphicsView(centralWidget);
+        graphicsView->setObjectName(QStringLiteral("graphicsView"));
+        graphicsView->setGeometry(QRect(40, 120, 161, 31));
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -76,8 +96,9 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
-        pushButton->setText(QApplication::translate("MainWindow", "PushButton", Q_NULLPTR));
+        pushButton->setText(QApplication::translate("MainWindow", "\351\207\215\347\275\256", Q_NULLPTR));
         colorButton->setText(QString());
+        label->setText(QApplication::translate("MainWindow", "TextLabel", Q_NULLPTR));
     } // retranslateUi
 
 };

@@ -2,15 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QPushButton>
+#include <QSplitter>
+#include <QListView>
+#include <QTextEdit>
+#include <QTreeView>
 
 namespace Ui {
 class MainWindow;
 }
-
-
-
-
 
 class MainWindow : public QMainWindow
 {
@@ -21,19 +20,12 @@ public:
     ~MainWindow();
 
 private:
-    QPalette    color_pal;
-    QColor      color;
-
-private slots:
-    void on_colorButton_clicked();
-    void on_pushButton_clicked();
-
-    void paintEvent(QPaintEvent *event);
-
-private:
     Ui::MainWindow *ui;
+    QSplitter *Splitter;
+    QSplitter *RightSplitter;
+    QListView *Listview;
+    QTextEdit *Textedit;
+    QTreeView *Treeview;
 };
-
-
 
 #endif // MAINWINDOW_H
