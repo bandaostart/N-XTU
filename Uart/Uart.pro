@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-09-06T16:05:41
+# Project created by QtCreator 2018-09-07T14:18:14
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Splitter
+TARGET = Uart
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -24,11 +24,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    dialog.cpp
+        mainwindow.cpp
 
-HEADERS  += mainwindow.h \
-    dialog.h
+HEADERS  += mainwindow.h
 
-FORMS    += mainwindow.ui \
-    dialog.ui
+FORMS    += mainwindow.ui
+
+RESOURCES += \
+    src.qrc
+

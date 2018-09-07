@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/add_toolbar.png</file>
+        <file>image/search_toolbar.png</file>
+        <file>image/preferences.png</file>
+        <file>image/exit.png</file>
+    </qresource>
+</RCC>

@@ -13,11 +13,8 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMdiArea>
-#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
@@ -28,12 +25,8 @@ QT_BEGIN_NAMESPACE
 class Ui_MainWindow
 {
 public:
-    QAction *actionDialog;
     QWidget *centralWidget;
-    QGridLayout *gridLayout;
-    QMdiArea *mdiArea;
     QMenuBar *menuBar;
-    QMenu *menuDialog;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -41,36 +34,25 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(579, 390);
-        actionDialog = new QAction(MainWindow);
-        actionDialog->setObjectName(QStringLiteral("actionDialog"));
+        MainWindow->resize(747, 442);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        gridLayout = new QGridLayout(centralWidget);
-        gridLayout->setSpacing(6);
-        gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        mdiArea = new QMdiArea(centralWidget);
-        mdiArea->setObjectName(QStringLiteral("mdiArea"));
-
-        gridLayout->addWidget(mdiArea, 0, 0, 1, 1);
-
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 579, 23));
-        menuDialog = new QMenu(menuBar);
-        menuDialog->setObjectName(QStringLiteral("menuDialog"));
+        menuBar->setGeometry(QRect(0, 0, 747, 23));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(mainToolBar->sizePolicy().hasHeightForWidth());
+        mainToolBar->setSizePolicy(sizePolicy);
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QStringLiteral("statusBar"));
         MainWindow->setStatusBar(statusBar);
-
-        menuBar->addAction(menuDialog->menuAction());
-        menuDialog->addAction(actionDialog);
 
         retranslateUi(MainWindow);
 
@@ -80,8 +62,6 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
-        actionDialog->setText(QApplication::translate("MainWindow", "Dialog_Splitter", Q_NULLPTR));
-        menuDialog->setTitle(QApplication::translate("MainWindow", "Dialog", Q_NULLPTR));
     } // retranslateUi
 
 };
