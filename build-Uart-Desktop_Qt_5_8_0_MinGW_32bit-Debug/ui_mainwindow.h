@@ -49,6 +49,7 @@ public:
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(mainToolBar->sizePolicy().hasHeightForWidth());
         mainToolBar->setSizePolicy(sizePolicy);
+        mainToolBar->setMovable(true);
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QStringLiteral("statusBar"));

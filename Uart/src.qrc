@@ -4,5 +4,13 @@
         <file>image/search_toolbar.png</file>
         <file>image/preferences.png</file>
         <file>image/exit.png</file>
+        <file>image/add.png</file>
+        <file>image/add_devices_message.png</file>
+        <file>image/add_module.png</file>
+        <file>image/header_add_device.png</file>
+        <file>image/header_search_device.png</file>
+        <file>image/search.png</file>
+        <file>image/discover_modules.png</file>
+        <file>image/error.png</file>
     </qresource>
 </RCC>

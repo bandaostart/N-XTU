@@ -24,12 +24,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    serialdialog.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    serialdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    serialdialog.ui
 
 RESOURCES += \
     src.qrc
+
 
