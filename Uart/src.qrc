@@ -12,5 +12,6 @@
         <file>image/search.png</file>
         <file>image/discover_modules.png</file>
         <file>image/error.png</file>
+        <file>image/serial_port.png</file>
     </qresource>
 </RCC>
