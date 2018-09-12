@@ -6,10 +6,24 @@
 #include <QGroupBox>
 #include <QListWidgetItem>
 #include <QList>
+#include <QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
+#include "serialdialog.h"
+
 
 namespace Ui {
 class SerialDialog;
 }
+
+struct SerialPortSettings {
+    int parity          = QSerialPort::NoParity;
+    int baud            = QSerialPort::Baud9600;
+    int dataBits        = QSerialPort::Data8;
+    int stopBits        = QSerialPort::OneStop;
+    int responseTime    = 1000;
+    int numberOfRetries = 3;
+};
+
 
 class SerialDialog : public QDialog
 {
@@ -17,13 +31,15 @@ class SerialDialog : public QDialog
 
 public:
     explicit SerialDialog(QWidget *parent = 0);
+
     ~SerialDialog();
 
 
 private:
-    int CountPortListItem;
-    enum {NumPortListItem = 100};
-    QListWidgetItem *PortListItem[NumPortListItem];
+    SerialPortSettings       Serial_Port_Settings;
+    QList<QListWidgetItem *> PortListItem;
+
+    void SerivalDiscover();
 
 
 private slots:

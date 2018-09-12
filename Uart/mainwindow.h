@@ -18,8 +18,7 @@ public:
 
 
 private:
-    SerialDialog serialDialog;
-
+    SerialDialog  *Serial_Dialog;
     void creatActions();
 
 private slots:
@@ -27,6 +26,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+
 };
 
 

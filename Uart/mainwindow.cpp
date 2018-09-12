@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    Serial_Dialog = new SerialDialog();
+
     creatActions();
 
 }
@@ -77,7 +79,7 @@ void MainWindow::creatActions()
 
 void MainWindow::AddSerialPort()
 {
-    serialDialog.exec();
+    Serial_Dialog->exec();
 }
 
 

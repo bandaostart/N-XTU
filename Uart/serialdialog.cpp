@@ -23,8 +23,6 @@ SerialDialog::SerialDialog(QWidget *parent) :
     ui->Status_Browser->setStyleSheet("QTextBrowser{border-width:0;border-style:outset}");
     ui->Status_Browser->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-
-
     ui->SelectPort_Radio->setChecked(true);
     ui->Port_LineEdit->setEnabled(false);
 
@@ -32,40 +30,8 @@ SerialDialog::SerialDialog(QWidget *parent) :
     ui->DataBits_Box->setCurrentIndex(1);
 
 
-    /*串口相关处理--------------------------------------------------------------------------*/
-    QIcon PortIcon = QIcon(QIcon(":/image/serial_port.png"));
-    QString PortNameStr = "";
-    CountPortListItem = 0;
-
-    const auto SerialInfos = QSerialPortInfo::availablePorts();
-    for (const QSerialPortInfo &info : SerialInfos)
-    {
-        PortListItem[CountPortListItem] = new QListWidgetItem(ui->Port_ListView);
-
-        PortListItem[CountPortListItem]->setIcon(PortIcon);
-        PortNameStr = info.portName();
-        for (int i=PortNameStr.length(); i<10; i++)
-        {
-            PortNameStr += "-";
-        }
-        PortNameStr +=info.description();
-        PortListItem[CountPortListItem]->setText(PortNameStr);
-        CountPortListItem++;
-
-        PortNameStr = "";
-    }
-
-    if (ui->Port_ListView->count() != 0)
-    {
-        ui->Port_ListView->setCurrentRow(0);
-        ui->Pixmap2_Label->hide();
-        ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
-    }
-    else
-    {
-        ui->Pixmap2_Label->show();
-        ui->Status_Browser->setText("You must select one Serial/USB port.");
-    }
+    /*串口查找发现*/
+    SerivalDiscover();
 
 
 
@@ -180,5 +146,47 @@ void SerialDialog::on_Port_LineEdit_textChanged(const QString &arg1)
     {
         ui->Pixmap2_Label->hide();
         ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
+    }
+}
+
+
+
+
+
+
+
+//串口发现操作
+void SerialDialog::SerivalDiscover()
+{
+    QVector<QString> PortName_str;
+
+    ui->Port_ListView->clear();
+    PortListItem.clear();
+
+    const auto SerialInfos = QSerialPortInfo::availablePorts();
+    for (const QSerialPortInfo &info : SerialInfos)
+    {
+        PortName_str.push_back(info.portName());
+    }
+
+    std::sort(PortName_str.begin(), PortName_str.end());
+    std::sort(PortName_str.begin(), PortName_str.end(),  [](const QString &s1, const QString &s2){return s1.size()  < s2.size();});
+    for ( const QString &str : PortName_str)
+    {
+        PortListItem.push_back(new QListWidgetItem(ui->Port_ListView));
+        PortListItem.back()->setIcon(QIcon(":/image/serial_port.png"));
+        PortListItem.back()->setText(str);
+    }
+
+    if (ui->Port_ListView->count() != 0)
+    {
+        ui->Port_ListView->setCurrentRow(0);
+        ui->Pixmap2_Label->hide();
+        ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
+    }
+    else
+    {
+        ui->Pixmap2_Label->show();
+        ui->Status_Browser->setText("You must select one Serial/USB port.");
     }
 }
