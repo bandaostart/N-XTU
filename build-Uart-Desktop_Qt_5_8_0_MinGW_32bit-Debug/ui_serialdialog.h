@@ -16,7 +16,6 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
-#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
@@ -31,7 +30,6 @@ QT_BEGIN_NAMESPACE
 class Ui_SerialDialog
 {
 public:
-    QDialogButtonBox *OkCancel_Button;
     QFrame *Second_Line;
     QLabel *Text_label;
     QTextBrowser *Status_Browser;
@@ -55,17 +53,14 @@ public:
     QLabel *Pixmap_Label;
     QFrame *First_Line;
     QListWidget *Port_ListView;
+    QPushButton *Finish_Button;
+    QPushButton *Cancel_Button;
 
     void setupUi(QDialog *SerialDialog)
     {
         if (SerialDialog->objectName().isEmpty())
             SerialDialog->setObjectName(QStringLiteral("SerialDialog"));
         SerialDialog->resize(420, 600);
-        OkCancel_Button = new QDialogButtonBox(SerialDialog);
-        OkCancel_Button->setObjectName(QStringLiteral("OkCancel_Button"));
-        OkCancel_Button->setGeometry(QRect(40, 560, 371, 32));
-        OkCancel_Button->setOrientation(Qt::Horizontal);
-        OkCancel_Button->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
         Second_Line = new QFrame(SerialDialog);
         Second_Line->setObjectName(QStringLiteral("Second_Line"));
         Second_Line->setGeometry(QRect(0, 540, 450, 3));
@@ -146,7 +141,12 @@ public:
         Port_ListView = new QListWidget(SerialDialog);
         Port_ListView->setObjectName(QStringLiteral("Port_ListView"));
         Port_ListView->setGeometry(QRect(40, 110, 371, 101));
-        OkCancel_Button->raise();
+        Finish_Button = new QPushButton(SerialDialog);
+        Finish_Button->setObjectName(QStringLiteral("Finish_Button"));
+        Finish_Button->setGeometry(QRect(230, 560, 75, 23));
+        Cancel_Button = new QPushButton(SerialDialog);
+        Cancel_Button->setObjectName(QStringLiteral("Cancel_Button"));
+        Cancel_Button->setGeometry(QRect(330, 560, 75, 23));
         Second_Line->raise();
         Text_label->raise();
         Status_Browser->raise();
@@ -170,10 +170,10 @@ public:
         Program_CheckBox->raise();
         SetDefault_Button->raise();
         Port_ListView->raise();
+        Finish_Button->raise();
+        Cancel_Button->raise();
 
         retranslateUi(SerialDialog);
-        QObject::connect(OkCancel_Button, SIGNAL(accepted()), SerialDialog, SLOT(accept()));
-        QObject::connect(OkCancel_Button, SIGNAL(rejected()), SerialDialog, SLOT(reject()));
 
         QMetaObject::connectSlotsByName(SerialDialog);
     } // setupUi
@@ -237,6 +237,8 @@ public:
         Program_CheckBox->setText(QApplication::translate("SerialDialog", "The radio module is programmable", Q_NULLPTR));
         SetDefault_Button->setText(QApplication::translate("SerialDialog", "Set defaults", Q_NULLPTR));
         Pixmap_Label->setText(QString());
+        Finish_Button->setText(QApplication::translate("SerialDialog", "Finish", Q_NULLPTR));
+        Cancel_Button->setText(QApplication::translate("SerialDialog", "Cancel", Q_NULLPTR));
     } // retranslateUi
 
 };

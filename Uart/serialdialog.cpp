@@ -6,6 +6,7 @@
 #include <QListWidgetItem>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QList>
+#include <QMessageBox>
 
 QT_USE_NAMESPACE
 
@@ -30,8 +31,6 @@ SerialDialog::SerialDialog(QWidget *parent) :
     ui->DataBits_Box->setCurrentIndex(1);
 
 
-    /*串口查找发现*/
-    SerivalDiscover();
 
 
 
@@ -79,12 +78,14 @@ void SerialDialog::on_SelectPort_Radio_clicked()
 {
     if (ui->Port_ListView->count() != 0)
     {
+        ui->Finish_Button->setEnabled(true);
         ui->Port_ListView->setCurrentRow(0);
         ui->Pixmap2_Label->hide();
         ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
     }
     else
     {
+        ui->Finish_Button->setEnabled(false);
         ui->Pixmap2_Label->show();
         ui->Status_Browser->setText("You must select one Serial/USB port.");
     }
@@ -100,11 +101,13 @@ void SerialDialog::on_ProvidePort_Radio_clicked()
 {
     if (ui->Port_LineEdit->text() == "")
     {
+        ui->Finish_Button->setEnabled(false);
         ui->Pixmap2_Label->show();
         ui->Status_Browser->setText("You must specify the serial port.");
     }
     else
     {
+        ui->Finish_Button->setEnabled(true);
         ui->Pixmap2_Label->hide();
         ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
     }
@@ -119,7 +122,18 @@ void SerialDialog::on_ProvidePort_Radio_clicked()
 //串口重新查找
 void SerialDialog::on_RefreshPort_Button_clicked()
 {
-    ui->Port_ListView->clear();
+    SerivalDiscover();
+}
+
+
+//参数默认配置
+void SerialDialog::on_SetDefault_Button_clicked()
+{
+    ui->BaudRate_Box->setCurrentIndex(3);
+    ui->DataBits_Box->setCurrentIndex(1);
+    ui->Parity_Box->setCurrentIndex(0);
+    ui->StopBits_Box->setCurrentIndex(0);
+    ui->FlowCtrl_Box->setCurrentIndex(0);
 }
 
 
@@ -127,8 +141,8 @@ void SerialDialog::on_RefreshPort_Button_clicked()
 //串口选择
 void SerialDialog::on_Port_ListView_itemClicked(QListWidgetItem *item)
 {
+    item->text();
     ui->Pixmap2_Label->hide();
-
     ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
 }
 
@@ -137,13 +151,15 @@ void SerialDialog::on_Port_ListView_itemClicked(QListWidgetItem *item)
 
 void SerialDialog::on_Port_LineEdit_textChanged(const QString &arg1)
 {
-    if (ui->Port_LineEdit->text() == "")
+    if (arg1 == "")
     {
+        ui->Finish_Button->setEnabled(false);
         ui->Pixmap2_Label->show();
         ui->Status_Browser->setText("You must specify the serial port.");
     }
     else
     {
+        ui->Finish_Button->setEnabled(true);
         ui->Pixmap2_Label->hide();
         ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
     }
@@ -180,13 +196,102 @@ void SerialDialog::SerivalDiscover()
 
     if (ui->Port_ListView->count() != 0)
     {
+        ui->Finish_Button->setEnabled(true);
         ui->Port_ListView->setCurrentRow(0);
         ui->Pixmap2_Label->hide();
         ui->Status_Browser->setText("Select and configure the Serial/USB port where the radio module is connected to.");
     }
     else
     {
+        ui->Finish_Button->setEnabled(false);
         ui->Pixmap2_Label->show();
         ui->Status_Browser->setText("You must select one Serial/USB port.");
     }
 }
+
+
+
+//串口选定
+void SerialDialog::on_Finish_Button_clicked()
+{
+    Serial_Port_Settings.baud      = ui->BaudRate_Box->currentText().toInt();
+    Serial_Port_Settings.dataBits  = ui->DataBits_Box->currentText().toInt();
+    switch(ui->Parity_Box->currentIndex())
+    {
+        case 0:
+            Serial_Port_Settings.parity = 0;
+        break;
+
+        case 1:
+            Serial_Port_Settings.parity = 2;
+        break;
+
+        case 2:
+            Serial_Port_Settings.parity = 5;
+        break;
+
+        case 3:
+            Serial_Port_Settings.parity = 3;
+        break;
+
+        case 4:
+            Serial_Port_Settings.parity = 4;
+        break;
+    }
+    Serial_Port_Settings.stopBits = ui->StopBits_Box->currentText().toInt();
+    Serial_Port_Settings.flowCtrl = ui->FlowCtrl_Box->currentIndex();
+    if(ui->SelectPort_Radio->isChecked())
+    {
+        Serial_Port_Settings.portName = ui->Port_ListView->currentItem()->text();
+    }
+    else
+    {
+        Serial_Port_Settings.portName = ui->Port_LineEdit->text();
+    }
+
+
+    if(!Serial_Port_Map.contains(Serial_Port_Settings.portName))
+    {
+        Serial_Port_Map.insert(Serial_Port_Settings.portName, new SerialTxThread());
+    }
+
+    if (!Serial_Port_Map.value(Serial_Port_Settings.portName)->SerialOpen(Serial_Port_Settings))
+    {
+        Serial_Port_Map.remove(Serial_Port_Settings.portName);
+        QMessageBox::critical(NULL, "Error discovering device",
+                              "COM > serOpenPort failed:Port not valid                           ", QMessageBox::Ok);
+    }
+    else
+    {
+        QDialog::accept();
+    }
+}
+
+
+//串口选择取消
+void SerialDialog::on_Cancel_Button_clicked()
+{
+    QDialog::accept();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

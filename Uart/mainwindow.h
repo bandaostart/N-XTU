@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMap>
 #include "serialdialog.h"
 
 namespace Ui {
@@ -18,7 +19,8 @@ public:
 
 
 private:
-    SerialDialog  *Serial_Dialog;
+    SerialDialog                    Serial_Dialog;
+
     void creatActions();
 
 private slots:

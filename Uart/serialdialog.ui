@@ -13,22 +13,6 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="OkCancel_Button">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>560</y>
-     <width>371</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
   <widget class="Line" name="Second_Line">
    <property name="geometry">
     <rect>
@@ -439,7 +423,32 @@ p, li { white-space: pre-wrap; }
     </rect>
    </property>
   </widget>
-  <zorder>OkCancel_Button</zorder>
+  <widget class="QPushButton" name="Finish_Button">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>560</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Finish</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Cancel_Button">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>560</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+  </widget>
   <zorder>Second_Line</zorder>
   <zorder>Text_label</zorder>
   <zorder>Status_Browser</zorder>
@@ -463,42 +472,11 @@ p, li { white-space: pre-wrap; }
   <zorder>Program_CheckBox</zorder>
   <zorder>SetDefault_Button</zorder>
   <zorder>Port_ListView</zorder>
+  <zorder>Finish_Button</zorder>
+  <zorder>Cancel_Button</zorder>
  </widget>
  <resources>
   <include location="src.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>OkCancel_Button</sender>
-   <signal>accepted()</signal>
-   <receiver>SerialDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>OkCancel_Button</sender>
-   <signal>rejected()</signal>
-   <receiver>SerialDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

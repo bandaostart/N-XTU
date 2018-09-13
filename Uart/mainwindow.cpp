@@ -9,10 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    Serial_Dialog = new SerialDialog();
-
     creatActions();
-
 }
 
 MainWindow::~MainWindow()
@@ -38,11 +35,7 @@ void MainWindow::creatActions()
 
 
     QAction *TaddAct        = new QAction(TaddIcon, tr("&Add Radio Module"), this);
-    TaddAct->setShortcut(QKeySequence(Qt::CTRL+Qt::SHIFT+Qt::Key_A));
     QAction *TsearchAct     = new QAction(TsearchIcon, tr("&Discover Radio Modules"), this);
-    TsearchAct->setShortcut(QKeySequence(Qt::CTRL+Qt::SHIFT+Qt::Key_D));
-
-
 
 
     //menuBar
@@ -79,7 +72,8 @@ void MainWindow::creatActions()
 
 void MainWindow::AddSerialPort()
 {
-    Serial_Dialog->exec();
+    Serial_Dialog.SerivalDiscover();
+    Serial_Dialog.exec();
 }
 
 

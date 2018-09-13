@@ -2,27 +2,16 @@
 #define SERIALDIALOG_H
 
 #include <QDialog>
-#include <QGridLayout>
-#include <QGroupBox>
 #include <QListWidgetItem>
-#include <QList>
 #include <QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
-#include "serialdialog.h"
+#include "serialthread.h"
 
 
 namespace Ui {
 class SerialDialog;
 }
 
-struct SerialPortSettings {
-    int parity          = QSerialPort::NoParity;
-    int baud            = QSerialPort::Baud9600;
-    int dataBits        = QSerialPort::Data8;
-    int stopBits        = QSerialPort::OneStop;
-    int responseTime    = 1000;
-    int numberOfRetries = 3;
-};
 
 
 class SerialDialog : public QDialog
@@ -34,12 +23,13 @@ public:
 
     ~SerialDialog();
 
+    void SerivalDiscover();
 
 private:
-    SerialPortSettings       Serial_Port_Settings;
-    QList<QListWidgetItem *> PortListItem;
+    SerialPortSettings              Serial_Port_Settings;
+    QList<QListWidgetItem *>        PortListItem;
+    QMap<QString, SerialTxThread *> Serial_Port_Map;
 
-    void SerivalDiscover();
 
 
 private slots:
@@ -53,8 +43,19 @@ private slots:
 
     void on_Port_LineEdit_textChanged(const QString &arg1);
 
+    void on_Finish_Button_clicked();
+
+    void on_SetDefault_Button_clicked();
+
+    void on_Cancel_Button_clicked();
+
 private:
     Ui::SerialDialog *ui;
 };
 
 #endif // SERIALDIALOG_H
+
+
+
+
+
