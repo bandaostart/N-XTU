@@ -8,14 +8,14 @@
 QT_USE_NAMESPACE
 
 //构造函数初始化，调用基类构造函数对基类进行初始化，列表初始化
-SerialTxThread::SerialTxThread(QObject *parent) : QThread(parent)
+SerialThread::SerialThread(QObject *parent) : QThread(parent)
 {
     ThreadStatus = true;
     Port_Status   = false;
 }
 
 
-SerialTxThread::~SerialTxThread()
+SerialThread::~SerialThread()
 {
     mutex.lock();
 
@@ -26,7 +26,6 @@ SerialTxThread::~SerialTxThread()
         Port_Status = false;
     }
 
-    cond.wakeOne();
     mutex.unlock();
 
     wait();
@@ -35,7 +34,7 @@ SerialTxThread::~SerialTxThread()
 
 
 //串口配置启动处理函数
-bool SerialTxThread::SerialOpen(const SerialPortSettings &serail_port_settings)
+bool SerialThread::SerialOpen(const SerialPortSettings &serail_port_settings)
 {
     QMutexLocker locker(&mutex);
 
@@ -85,14 +84,16 @@ bool SerialTxThread::SerialOpen(const SerialPortSettings &serail_port_settings)
 
 
 
-void SerialTxThread::SerialRequestData(QString &request_data)
+void SerialThread::SerialTxData(QString &tx_data)
 {
     if (ThreadStatus && Port_Status)
     {
         mutex.lock();
 
-        Request_Data = request_data.toLocal8Bit();
-        cond.wakeOne();
+        Tx_Data = tx_data.toLocal8Bit();
+
+        Serial_Port.write(Tx_Data);
+        Serial_Port.waitForBytesWritten(3);
 
         mutex.unlock();
     }
@@ -101,17 +102,25 @@ void SerialTxThread::SerialRequestData(QString &request_data)
 
 
 
-void SerialTxThread::run()
+void SerialThread::run()
 {
     while (ThreadStatus && Port_Status)
     {
-        mutex.lock();
-        cond.wait(&mutex);
+        if (Serial_Port.waitForBytesWritten(-1))
+        {
+          QByteArray rx_data = Serial_Port.readAll();
+          while (Serial_Port.waitForReadyRead(3))
+          {
+            rx_data += Serial_Port.readAll();
+          }
 
-        Serial_Port.write(Request_Data);
-        Serial_Port.waitForBytesWritten(3);
+          Rx_Data.prepend(rx_data);
 
-        mutex.unlock();
+          if (!Rx_Data.isEmpty())
+          {
+            emit this->SerialRxData(Rx_Data);
+          }
+        }
     }
 }
 

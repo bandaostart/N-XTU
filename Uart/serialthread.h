@@ -19,29 +19,34 @@ struct SerialPortSettings {
 };
 
 
-class  SerialTxThread :  public QThread
+class  SerialThread :  public QThread
 {
     Q_OBJECT
 
 public:
-    explicit SerialTxThread(QObject *parent = nullptr);
-    ~SerialTxThread();
+    explicit SerialThread(QObject *parent = nullptr);
+    ~SerialThread();
 
     bool SerialOpen(const SerialPortSettings &serail_port_settings);
-    void SerialRequestData(QString &request_data);
+    void SerialTxData(QString &tx_data);
     void run() Q_DECL_OVERRIDE;
+
+
+signals:
+    void SerialRxData(QString &rx_data);
 
 
 private:
     bool               Port_Status;
     QSerialPort        Serial_Port;
     SerialPortSettings m_Serial_Port_Settings;
-    QByteArray         Request_Data;
+    QByteArray         Tx_Data;
+    QString            Rx_Data;
 
 private:
-    QMutex         mutex;
-    QWaitCondition cond;
-    bool           ThreadStatus;
+    QMutex             mutex;
+    QWaitCondition     cond;
+    bool               ThreadStatus;
 
 };
 

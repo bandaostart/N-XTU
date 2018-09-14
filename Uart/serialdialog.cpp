@@ -252,7 +252,7 @@ void SerialDialog::on_Finish_Button_clicked()
 
     if(!Serial_Port_Map.contains(Serial_Port_Settings.portName))
     {
-        Serial_Port_Map.insert(Serial_Port_Settings.portName, new SerialTxThread());
+        Serial_Port_Map.insert(Serial_Port_Settings.portName, new SerialThread());
     }
 
     if (!Serial_Port_Map.value(Serial_Port_Settings.portName)->SerialOpen(Serial_Port_Settings))

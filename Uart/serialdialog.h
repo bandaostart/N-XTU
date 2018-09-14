@@ -28,7 +28,7 @@ public:
 private:
     SerialPortSettings              Serial_Port_Settings;
     QList<QListWidgetItem *>        PortListItem;
-    QMap<QString, SerialTxThread *> Serial_Port_Map;
+    QMap<QString, SerialThread *>   Serial_Port_Map;
 
 
 
