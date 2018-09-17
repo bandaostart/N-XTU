@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/xbee_zigbee_64.png</file>
+        <file>image/delete.png</file>
+        <file>image/expand.png</file>
+        <file>image/find.png</file>
+    </qresource>
+</RCC>

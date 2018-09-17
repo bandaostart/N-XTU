@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-09-14T16:27:35
+# Project created by QtCreator 2018-09-17T17:35:45
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = DockWidget
+TARGET = Module_Package
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -24,11 +24,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    leftwindow.cpp
 
-HEADERS  += mainwindow.h
-
-FORMS    += mainwindow.ui
+HEADERS  += mainwindow.h \
+    leftwindow.h
 
 RESOURCES += \
     src.qrc
