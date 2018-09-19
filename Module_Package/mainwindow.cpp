@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
    addToolBar(tool_bar);
 
    left_window  = new LeftWindow();
-   right_window = new LeftWindow();
+   right_window = new RightWindow();
    left_window->setMinimumWidth(250);
    right_window->setMinimumWidth(250);
 

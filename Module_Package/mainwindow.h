@@ -5,6 +5,7 @@
 #include <QToolBar>
 #include <QSplitter>
 #include "leftwindow.h"
+#include "rightwindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -21,10 +22,10 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    QToolBar    *tool_bar;
-    LeftWindow  *left_window;
-    LeftWindow  *right_window;
-    QSplitter   *splitter;
+    QToolBar     *tool_bar;
+    LeftWindow   *left_window;
+    RightWindow  *right_window;
+    QSplitter    *splitter;
 
 };
 

@@ -8,5 +8,14 @@
         <file>image/find_devices.png</file>
         <file>image/sort.png</file>
         <file>image/devices.png</file>
+        <file>image/connect.png</file>
+        <file>image/connect_disabled.png</file>
+        <file>image/console.png</file>
+        <file>image/console_record_start.png</file>
+        <file>image/console_record_start_disabled.png</file>
+        <file>image/console_record_stop.png</file>
+        <file>image/disconnect.png</file>
+        <file>image/network_start.png</file>
+        <file>image/network_stop.png</file>
     </qresource>
 </RCC>

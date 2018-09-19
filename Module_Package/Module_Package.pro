@@ -26,12 +26,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     leftwindow.cpp \
-    modulewindow.cpp
+    modulewindow.cpp \
+    rightwindow.cpp \
+    consolewindow.cpp
 
 HEADERS  += \
     leftwindow.h \
     mainwindow.h \
-    modulewindow.h
+    modulewindow.h \
+    rightwindow.h \
+    consolewindow.h
 
 RESOURCES += \
     src.qrc

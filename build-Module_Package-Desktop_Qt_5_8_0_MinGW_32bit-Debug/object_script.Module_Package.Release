@@ -1,0 +1,14 @@
+INPUT(
+./release\main.o
+./release\mainwindow.o
+./release\leftwindow.o
+./release\modulewindow.o
+./release\rightwindow.o
+./release\consolewindow.o
+./release\qrc_src.o
+./release\moc_leftwindow.o
+./release\moc_mainwindow.o
+./release\moc_modulewindow.o
+./release\moc_rightwindow.o
+./release\moc_consolewindow.o
+);
