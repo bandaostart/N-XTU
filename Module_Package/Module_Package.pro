@@ -25,10 +25,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    leftwindow.cpp
+    leftwindow.cpp \
+    modulewindow.cpp
 
-HEADERS  += mainwindow.h \
-    leftwindow.h
+HEADERS  += \
+    leftwindow.h \
+    mainwindow.h \
+    modulewindow.h
 
 RESOURCES += \
     src.qrc
+
+FORMS +=

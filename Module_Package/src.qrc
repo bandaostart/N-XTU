@@ -7,5 +7,6 @@
         <file>image/clear_devices.png</file>
         <file>image/find_devices.png</file>
         <file>image/sort.png</file>
+        <file>image/devices.png</file>
     </qresource>
 </RCC>

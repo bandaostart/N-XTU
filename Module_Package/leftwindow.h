@@ -2,9 +2,14 @@
 #define LEFTWINDOW_H
 
 #include <QMainWindow>
-#include <QMenu>
 #include <QToolBar>
+#include <QMenu>
 #include <QAction>
+#include <QLabel>
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QSpacerItem>
+#include "modulewindow.h"
 
 class LeftWindow : public QMainWindow
 {
@@ -16,9 +21,15 @@ public:
     ~LeftWindow();
 
 private:
-    QMenu    *Tool_Menu;
-    QToolBar *Tool_Bar;
+    QToolBar    *Tool_Bar;
+    QAction     *Find_Action;
+    QMenu       *Tool_Menu;
+    QAction     *Clear_Action;
+    QVBoxLayout *Vbox_Layout;
 
+    ModuleWindow *Moduel_Widget;
+    QWidget      *Central_Widget;
+    QSpacerItem  *verticalSpacer;
 };
 
 

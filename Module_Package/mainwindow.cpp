@@ -6,10 +6,13 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+   tool_bar =  new QToolBar(this);
+   addToolBar(tool_bar);
+
    left_window  = new LeftWindow();
    right_window = new LeftWindow();
-   left_window->setMinimumWidth(100);
-   right_window->setMinimumWidth(100);
+   left_window->setMinimumWidth(250);
+   right_window->setMinimumWidth(250);
 
 
    splitter = new QSplitter(Qt::Horizontal, this);

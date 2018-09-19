@@ -2,21 +2,29 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QToolBar>
 #include <QSplitter>
 #include "leftwindow.h"
+
+namespace Ui {
+class MainWindow;
+}
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-public:
-    QSplitter    *splitter;
-    LeftWindow   *left_window;
-    LeftWindow   *right_window;
+private:
+    Ui::MainWindow *ui;
+
+    QToolBar    *tool_bar;
+    LeftWindow  *left_window;
+    LeftWindow  *right_window;
+    QSplitter   *splitter;
 
 };
 
