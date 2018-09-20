@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QToolBar>
 #include <QLabel>
+#include "consolewindow.h"
 
 
 
@@ -17,7 +18,8 @@ public:
     ~RightWindow();
 
 private:
-    QToolBar *Tool_Bar;
+    QToolBar      *Tool_Bar;
+    ConsoleWindow *Console_Window;
 
 };
 

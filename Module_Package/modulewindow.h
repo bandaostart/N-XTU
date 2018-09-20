@@ -27,15 +27,11 @@ private:
     QToolBar     *ToolBar;
     QHBoxLayout  *HboxLayout;
 
+    enum {NumParaRow = 4};
+
     QGroupBox    *GroupBox;
-    QLabel       *Name;
-    QLabel       *Name_Text;
-    QLabel       *Function;
-    QLabel       *Function_Text;
-    QLabel       *Port;
-    QLabel       *Port_Text;
-    QLabel       *Mac;
-    QLabel       *Mac_Text;
+    QLabel       *Name[NumParaRow];
+    QLabel       *Name_Text[NumParaRow];
 
     int  PaintFlag;
     void paintEvent(QPaintEvent *event) override;

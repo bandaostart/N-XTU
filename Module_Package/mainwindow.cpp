@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
 
    left_window  = new LeftWindow();
    right_window = new RightWindow();
+   left_window->resize(350, 100);
    left_window->setMinimumWidth(250);
    right_window->setMinimumWidth(250);
 
@@ -26,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent)
 
    this->setCentralWidget(splitter);
 
-   this->setFixedSize(960, 660);
+   this->setMinimumSize(800, 660);
+   this->resize(1300, 600);
 }
 
 MainWindow::~MainWindow()

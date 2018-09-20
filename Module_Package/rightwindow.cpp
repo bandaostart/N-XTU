@@ -17,6 +17,9 @@ RightWindow::RightWindow(QWidget *parent) :
     QLabel *Device_Text = new QLabel("-", this);
     Tool_Bar->addWidget(Device_Text);
     addToolBar(Tool_Bar);
+
+    Console_Window =  new ConsoleWindow(this);
+    setCentralWidget(Console_Window);
 }
 
 

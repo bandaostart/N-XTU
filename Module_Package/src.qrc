@@ -17,5 +17,23 @@
         <file>image/disconnect.png</file>
         <file>image/network_start.png</file>
         <file>image/network_stop.png</file>
+        <file>image/xbee_digimesh_48.png</file>
+        <file>image/xbee_digipoint_48.png</file>
+        <file>image/blue_arrow.png</file>
+        <file>image/error.png</file>
+        <file>image/ok.png</file>
+        <file>image/face-sad.png</file>
+        <file>image/face-smile.png</file>
+        <file>image/xbee_loading1.png</file>
+        <file>image/xbee_loading2.png</file>
+        <file>image/xbee_loading3.png</file>
+        <file>image/xbee_loading4.png</file>
+        <file>image/xbee_loading5.png</file>
+        <file>image/xbee_loading6.png</file>
+        <file>image/xbee_loading7.png</file>
+        <file>image/xbee_loading8.png</file>
+        <file>image/xbee_loading9.png</file>
+        <file>image/xbee_loading10.png</file>
+        <file>image/xbee_loading11.png</file>
     </qresource>
 </RCC>

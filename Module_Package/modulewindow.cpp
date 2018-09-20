@@ -19,49 +19,31 @@ ModuleWindow::ModuleWindow(QWidget *parent) :
     GroupBox = new QGroupBox(this);
     GroupBox->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
     GroupBox->setGeometry(65,0,300,90);
+    for (int i=0; i<NumParaRow; i++)
+    {
+        Name[i]  = new QLabel(GroupBox);
+        Name[i]->setFont(font);
+        Name[i]->setGeometry(0, i*21+6, 70, 15);
+        Name[i]->setAlignment(Qt::AlignRight);
+    }
+    Name[0]->setText("Name:");
+    Name[1]->setText("Function:");
+    Name[2]->setText("Port:");
+    Name[3]->setText("MAC:");
 
-    Name          = new QLabel(GroupBox);
-    Name->setFont(font);
-    Name->setGeometry(0, 6, 70, 15);
-    Name->setAlignment(Qt::AlignRight);
-    Name->setText("Name:");
-    Function      = new QLabel(GroupBox);
-    Function->setFont(font);
-    Function->setGeometry(0, 27, 70, 15);
-    Function->setAlignment(Qt::AlignRight);
-    Function->setText("Function:");
-    Port          = new QLabel(GroupBox);
-    Port->setFont(font);
-    Port->setGeometry(0, 48, 70, 15);
-    Port->setAlignment(Qt::AlignRight);
-    Port->setText("Port:");
-    Mac           = new QLabel(GroupBox);
-    Mac->setFont(font);
-    Mac->setGeometry(0, 69, 70, 15);
-    Mac->setAlignment(Qt::AlignRight);
-    Mac->setText("MAC:");
 
     font.setWeight(40);
-    Name_Text     = new QLabel(GroupBox);
-    Name_Text->setFont(font);
-    Name_Text->setGeometry(80, 6, 140, 15);
-    Name_Text->setAlignment(Qt::AlignLeft);
-    Name_Text->setText("");
-    Function_Text = new QLabel(GroupBox);
-    Function_Text->setFont(font);
-    Function_Text->setGeometry(80, 27, 140, 15);
-    Function_Text->setAlignment(Qt::AlignLeft);
-    Function_Text->setText("Zigbee Coordinator API");
-    Port_Text     = new QLabel(GroupBox);
-    Port_Text->setFont(font);
-    Port_Text->setGeometry(80, 48, 140, 15);
-    Port_Text->setAlignment(Qt::AlignLeft);
-    Port_Text->setText("COM10");
-    Mac_Text      = new QLabel(GroupBox);
-    Mac_Text->setFont(font);
-    Mac_Text->setGeometry(80, 69, 140, 15);
-    Mac_Text->setAlignment(Qt::AlignLeft);
-    Mac_Text->setText("");
+    for (int i=0; i<NumParaRow; i++)
+    {
+        Name_Text[i] = new QLabel(GroupBox);
+        Name_Text[i]->setFont(font);
+        Name_Text[i]->setGeometry(80, i*21+6, 140, 15);
+        Name_Text[i]->setAlignment(Qt::AlignLeft);
+    }
+    Name_Text[0]->setText("");
+    Name_Text[1]->setText("Zigbee Coordinator API");
+    Name_Text[2]->setText("COM10");
+    Name_Text[3]->setText("");
 
 
     ToolBar =  new QToolBar(this);
@@ -78,7 +60,6 @@ ModuleWindow::ModuleWindow(QWidget *parent) :
 
 
     HboxLayout =  new QHBoxLayout(this);
-
     HboxLayout->addWidget(Label);
     HboxLayout->addWidget(GroupBox);
     HboxLayout->addWidget(ToolBar);
@@ -86,8 +67,8 @@ ModuleWindow::ModuleWindow(QWidget *parent) :
 
     this->setMinimumHeight(100);
     this->setMaximumHeight(100);
+    this->resize(350, 100);
     this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-
     this->setCursor(QCursor(Qt::PointingHandCursor));
 }
 
