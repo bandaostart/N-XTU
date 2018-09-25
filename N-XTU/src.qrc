@@ -48,5 +48,6 @@
         <file>image/xbee_loading9.png</file>
         <file>image/xbee_loading10.png</file>
         <file>image/xbee_loading11.png</file>
+        <file>image/preferences_disabled.png</file>
     </qresource>
 </RCC>

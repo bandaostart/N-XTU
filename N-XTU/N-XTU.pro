@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets serialport
 
 TARGET = N-XTU
 TEMPLATE = app
@@ -24,9 +24,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    serialthread.cpp \
+    serialdialog.cpp \
+    leftwindow.cpp \
+    rightwindow.cpp \
+    consolewindow.cpp \
+    modulewindow.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    serialthread.h \
+    serialdialog.h \
+    leftwindow.h \
+    rightwindow.h \
+    consolewindow.h \
+    modulewindow.h
 
 RESOURCES += \
     src.qrc
+
+FORMS += \
+    serialdialog.ui
