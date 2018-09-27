@@ -21,6 +21,7 @@ class ModuleWindow : public QWidget
 public:
     explicit ModuleWindow(QVector<QString> &text, QWidget *parent = 0);
     ~ModuleWindow();
+    void         ModuleInfo_Set();
 
 
 signals:
@@ -54,6 +55,11 @@ private:
     QLabel       *Name_Text[NumParaRow];
 
     int          PaintFlag;
+
+public:
+    QString      Text_Content[NumParaRow+1];
+
+
 };
 
 #endif // MODULEWINDOW_H

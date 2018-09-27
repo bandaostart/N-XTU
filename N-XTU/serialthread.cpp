@@ -10,8 +10,7 @@ QT_USE_NAMESPACE
 //构造函数初始化，调用基类构造函数对基类进行初始化，列表初始化
 SerialThread::SerialThread(QObject *parent) : QThread(parent)
 {
-    ThreadStatus = true;
-    Port_Status   = false;
+    connect(&Serial_Port, &QSerialPort::readyRead, this, &SerialThread::SerialRxFlag);
 }
 
 
@@ -19,16 +18,12 @@ SerialThread::~SerialThread()
 {
     mutex.lock();
 
-    ThreadStatus = false;
-    if (Port_Status)
+    if (Serial_Port.isOpen())
     {
         Serial_Port.close();
-        Port_Status = false;
     }
 
     mutex.unlock();
-
-    wait();
 }
 
 
@@ -38,7 +33,7 @@ bool SerialThread::SerialOpen(const SerialPortSettings &serail_port_settings)
 {
     QMutexLocker locker(&mutex);
 
-    if (Port_Status)
+    if (Serial_Port.isOpen())
     {
         Serial_Port.close();
 
@@ -65,22 +60,10 @@ bool SerialThread::SerialOpen(const SerialPortSettings &serail_port_settings)
 
     if (!Serial_Port.open(QIODevice::ReadWrite))
     {
-        Port_Status = false;
-        if (isRunning())
-        {
-            quit();
-        }
-
         return false;
     }
     else
     {
-        Port_Status = true;
-        if (!isRunning())
-        {
-            start();
-        }
-
         return true;
     }
 }
@@ -91,10 +74,8 @@ void SerialThread::SerialClose(void)
 {
     QMutexLocker locker(&mutex);
 
-    if (Port_Status)
+    if (Serial_Port.isOpen())
     {
-        Port_Status = false;
-
         Serial_Port.close();
         msleep(10);
     }
@@ -104,15 +85,17 @@ void SerialThread::SerialClose(void)
 
 
 
-void SerialThread::SerialTxData(QString &tx_data)
+void SerialThread::SerialTxData(const unsigned char *tx_data, unsigned short tx_num)
 {
-    if (ThreadStatus && Port_Status)
+    if (Serial_Port.isOpen())
     {
         mutex.lock();
 
-        Tx_Data = tx_data.toLocal8Bit();
+        Tx_Num = tx_num;
+        memcpy(Tx_Data, tx_data, Tx_Num);
 
-        Serial_Port.write(Tx_Data);
+        Serial_Port.write((const char *)Tx_Data, Tx_Num);
+
         Serial_Port.waitForBytesWritten(3);
 
         mutex.unlock();
@@ -121,26 +104,31 @@ void SerialThread::SerialTxData(QString &tx_data)
 
 
 
-
 void SerialThread::run()
 {
-    while (ThreadStatus && Port_Status)
+    while (1)
     {
-        if (Serial_Port.waitForBytesWritten(-1))
-        {
-          QByteArray rx_data = Serial_Port.readAll();
-          while (Serial_Port.waitForReadyRead(3))
-          {
-            rx_data += Serial_Port.readAll();
-          }
+    }
+}
 
-          Rx_Data.prepend(rx_data);
 
-          if (!Rx_Data.isEmpty())
-          {
-            emit this->SerialRxData(Rx_Data);
-          }
-        }
+
+void SerialThread::SerialRxFlag()
+{
+    QByteArray rx_data;
+
+    while (Serial_Port.waitForReadyRead(5))
+    {
+        rx_data += Serial_Port.readAll();
+    }
+
+    Rx_Num  = 0;
+    Rx_Num  = rx_data.length();
+    memcpy(Rx_Data, rx_data.data(), Rx_Num);
+
+    if (Rx_Num)
+    {
+        emit this->SerialRxData(m_Serial_Port_Settings.portName, Rx_Data, Rx_Num);
     }
 }
 

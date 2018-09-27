@@ -49,5 +49,12 @@
         <file>image/xbee_loading10.png</file>
         <file>image/xbee_loading11.png</file>
         <file>image/preferences_disabled.png</file>
+        <file>image/xbee_search1.png</file>
+        <file>image/xbee_search2.png</file>
+        <file>image/xbee_search3.png</file>
+        <file>image/xbee_search4.png</file>
+        <file>image/xbee_search5.png</file>
+        <file>image/xbee_search6.png</file>
+        <file>image/xbee_search7.png</file>
     </qresource>
 </RCC>

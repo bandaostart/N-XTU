@@ -1,19 +1,30 @@
 #include "mainwindow.h"
 
+extern bool     AT_Com_ReqType(ModuleDeal *module_deal, uint8_t *tx_buf, uint16_t &tx_num);
+extern void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     //创建菜单栏
     Creat_MenuBar();
 
+
     //创建工具栏
     Creat_ToolBar();
+
 
     //创建中心窗体
     Creat_CentralWidget();
 
-    //mainwindow
-    this->setMinimumSize(800, 600);
+
+    //创建串口发送定时器
+    Creat_SerialTxTimer();
+
+
+    //设置窗体属性
+    Set_WidgetAttributes();
 }
 
 MainWindow::~MainWindow()
@@ -24,32 +35,37 @@ MainWindow::~MainWindow()
 
 
 
-
 /*创建菜单栏-----------------------------------------------------------------------------------------------------*/
 void MainWindow::Creat_MenuBar()
 {
+    //创建action
     QAction *Add_Action         = new QAction(QIcon(":/image/add_module.png"), tr("Add Radio Module"), this);
     QAction *Search_Action      = new QAction(QIcon(":/image/discover_modules.png"), tr("Discover Radio Modules"), this);
     QAction *Preferences_Action = new QAction(QIcon(":/image/preferences.png"), tr("Preferences"), this);
     QAction *Exit_Action        = new QAction(QIcon(":/image/exit.png"), tr("Exit"), this);
 
+    //设置action快捷键
     Add_Action->setShortcut(QKeySequence(Qt::CTRL+Qt::SHIFT+Qt::Key_A));
     Search_Action->setShortcut(QKeySequence(Qt::CTRL+Qt::SHIFT+Qt::Key_D));
     Preferences_Action->setShortcut(QKeySequence(Qt::CTRL+Qt::SHIFT+Qt::Key_P));
     Exit_Action->setShortcut(QKeySequence(Qt::CTRL+Qt::SHIFT+Qt::Key_Q));
 
+    //创建菜单栏
     Menu_Bar        = new QMenuBar(this);
-
-    QMenu *NxtuMenu  = Menu_Bar->addMenu("&N-XTU");
+    QMenu *NxtuMenu  = Menu_Bar->addMenu("&N-CTU");
     NxtuMenu->addAction(Add_Action);
     NxtuMenu->addAction(Search_Action);
     NxtuMenu->addAction(Preferences_Action);
     NxtuMenu->addAction(Exit_Action);
 
+    //管理消息和槽函数
     connect(Add_Action,  &QAction::triggered, this, &MainWindow::Open_SerialDialog);
     connect(Exit_Action, &QAction::triggered, this, &MainWindow::Application_Exit);
 
+
+    //添加菜单
     this->setMenuBar(Menu_Bar);
+
 
     setAttribute(Qt::WA_AlwaysShowToolTips) ;
 }
@@ -107,58 +123,230 @@ void MainWindow::Creat_CentralWidget()
 
 
 
+/*创建串口发送定时器------------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Creat_SerialTxTimer()
+{
+    SerialTx_Timer = new QTimer(this);
+
+    connect(SerialTx_Timer, SIGNAL(timeout()), this, SLOT(Send_SerialPort()));
+    SerialTx_Timer->start(1);
+}
+
+
+
+/*设置窗体属性----------------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Set_WidgetAttributes()
+{
+    this->setWindowTitle("N-CTU");
+    this->setMinimumSize(800, 600);
+}
 
 
 
 
-/*打开串口对话框 槽函数------------------------------------------------------------------------------------------*/
+/*串口模块添处理--------------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Add_Module_Deal()
+{
+    //判断hash表中是否已经存该串口
+    if(!Module_Deal_Hash.contains(Serial_Dialog->Serial_Port_Settings.portName))
+    {
+        ModuleDeal *Module_Deal;
+        Module_Deal = new ModuleDeal;
+
+
+        //模块窗体创建
+        QVector<QString> text;
+        text.push_back("");
+        text.push_back("");
+        text.push_back("");
+        text.push_back(Serial_Dialog->Serial_Port_Settings.portName);
+        text.push_back(" ");
+        Module_Deal->moduleWindow = new ModuleWindow(text, this);
+
+        Module_Deal->moduleWindow->Text_Content[0] = "";
+        Module_Deal->moduleWindow->Text_Content[1] = "";
+        Module_Deal->moduleWindow->Text_Content[2] = "";
+        Module_Deal->moduleWindow->Text_Content[3] = Serial_Dialog->Serial_Port_Settings.portName;
+        Module_Deal->moduleWindow->Text_Content[4] = "";
+
+        connect(Module_Deal->moduleWindow, &ModuleWindow::Signal_ModuleWinClose, this, Delete_SerialPort);
+
+
+        //模块串口线程创建
+        Module_Deal->serialThread = new SerialThread(this);
+        connect(Module_Deal->serialThread, &SerialThread::SerialRxData, this, Receive_SerialPort);
+
+
+        //模块串口发送接收相关参数创建
+        Module_Deal->serialtxrxPara = new SerialTxRxPara;
+        Module_Deal->serialtxrxPara->func_type   = MODULE_REQ_NULL;
+        Module_Deal->serialtxrxPara->frame_id    = 0x00;
+        Module_Deal->serialtxrxPara->func_type   = 0x00;
+        Module_Deal->serialtxrxPara->tx_interval = 0x00;
+
+
+        //插入到hash中
+        Module_Deal_Hash.insert(Serial_Dialog->Serial_Port_Settings.portName, Module_Deal);
+    }
+
+
+    //打开串口
+    if (!Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread->SerialOpen(Serial_Dialog->Serial_Port_Settings))
+    {
+        Module_Deal_Hash.remove(Serial_Dialog->Serial_Port_Settings.portName);
+        QMessageBox::critical(NULL, "Error discovering device",
+                             Serial_Dialog->Serial_Port_Settings.portName +" > Port Open Failed: Port not valid                           ", QMessageBox::Ok);
+    }
+    else
+    {
+        //请求模块相关信息
+        auto temp_serialtxrxPara = Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialtxrxPara;
+        temp_serialtxrxPara->func_type   = MODULE_TYPE_REQ_FUN;
+        temp_serialtxrxPara->frame_id    = 0x01;
+        temp_serialtxrxPara->tx_num      = MODULE_TYPE_REQ_NUM;
+        temp_serialtxrxPara->tx_interval = MODULE_TYPE_REQ_INTERVAL;
+        temp_serialtxrxPara->tx_count    = 0x00;
+    }
+}
+
+
+
+/*串口接收处理--------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+    auto para = module_deal->serialtxrxPara;
+
+    switch (para->func_type)
+    {
+        case MODULE_TYPE_REQ_FUN:
+            AT_Com_RspType(module_deal, rx_buf, rx_num);
+        break;
+
+        default:
+        break;
+    }
+}
+
+
+
+/*串口发送处理-------------------------------------------------------------------------------------------------------------*/
+bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
+{
+    uint8_t  tx_buf[512] = {0}, func_type = 0xFF;
+    uint16_t tx_num = 0;
+
+    func_type = module_deal->serialtxrxPara->func_type;
+    if (func_type != MODULE_REQ_NULL)
+    {
+        switch (func_type)
+        {
+            //模块类型获取
+            case MODULE_TYPE_REQ_FUN:
+            {
+                if (module_deal->serialtxrxPara->tx_count == 0)
+                {
+                    if (module_deal->serialtxrxPara->tx_num == 0)
+                    {
+                        //左侧窗口添加模块对话框
+                        module_deal->serialtxrxPara->func_type   = MODULE_REQ_NULL;
+                        module_deal->serialtxrxPara->tx_num      = 0x00;
+                        module_deal->serialtxrxPara->tx_interval = 0x00;
+                        module_deal->serialtxrxPara->tx_count    = 0x00;
+
+                        module_deal->moduleWindow->ModuleInfo_Set();
+                        left_window->Add_SubWidget(Module_Deal_Hash);
+                    }
+                    else
+                    {
+                        AT_Com_ReqType(module_deal, tx_buf, tx_num);
+                        module_deal->serialThread->SerialTxData(tx_buf, tx_num);
+                    }
+                }
+                else
+                {
+                    if (module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval)
+                    {
+                        module_deal->serialThread->SerialClose();
+                        Module_Deal_Hash.remove(Serial_Dialog->Serial_Port_Settings.portName);
+                        QMessageBox::critical(NULL, "Error discovering device",
+                                              module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
+                        return false;
+                    }
+                }
+                module_deal->serialtxrxPara->tx_count++;
+
+                break;
+            }
+
+
+
+            default:
+                break;
+        }
+    }
+
+    return true;
+}
+
+
+
+
+
+
+
+
+/*打开串口对话框选中串口后并进行相应的处理 槽函数------------------------------------------------------------------------------------------*/
 void MainWindow::Open_SerialDialog()
 {
     Serial_Dialog->SerivalDiscover();
     if (Serial_Dialog->exec() == QDialog::Accepted)
     {
-        if(!Module_Deal_Hash.contains(Serial_Dialog->Serial_Port_Settings.portName))
-        {
-            ModuleDeal *Module_Deal;
-
-            Module_Deal = new ModuleDeal;
-
-            QVector<QString> text;
-            text.push_back("DP");
-            text.push_back("Master");
-            text.push_back("Zigbee Master API");
-            text.push_back(Serial_Dialog->Serial_Port_Settings.portName);
-            text.push_back(" ");
-            Module_Deal->moduleWindow = new ModuleWindow(text, this);
-            connect(Module_Deal->moduleWindow, &ModuleWindow::Signal_ModuleWinClose, this, Delete_SerialPort);
-
-
-            Module_Deal->serialThread = new SerialThread(this);
-
-            Module_Deal_Hash.insert(Serial_Dialog->Serial_Port_Settings.portName, Module_Deal);
-        }
-
-
-        if (!Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread->SerialOpen(Serial_Dialog->Serial_Port_Settings))
-        {
-            Module_Deal_Hash.remove(Serial_Dialog->Serial_Port_Settings.portName);
-            QMessageBox::critical(NULL, "Error discovering device",
-                                  "COM > serOpenPort failed:Port not valid                           ", QMessageBox::Ok);
-        }
-        else
-        {
-            left_window->Add_SubWidget(Module_Deal_Hash);
-        }
+        Add_Module_Deal();
     }
 }
 
 
-/*删除串口--------------------------------------------------------------------------------------------------*/
+
+
+/*删除模块对话框后进行相应处理 槽函数-----------------------------------------------------------------------------*/
 void MainWindow::Delete_SerialPort(const QString &portname)
 {
     Module_Deal_Hash.value(portname)->serialThread->SerialClose();
+
     Module_Deal_Hash.remove(portname);
 }
+
+
+
+/*串口数据接收相应处理 槽函数-----------------------------------------------------------------------------------*/
+void MainWindow::Receive_SerialPort(const QString &portname, unsigned char *rx_data, unsigned short rx_num)
+{
+    auto module_deal = Module_Deal_Hash.value(portname);
+    Port_Receive_Deal(module_deal, rx_data, rx_num);
+}
+
+
+
+/*串口发送数据相应处理 槽函数-----------------------------------------------------------------------------------*/
+void MainWindow::Send_SerialPort()
+{
+    auto module = Module_Deal_Hash.begin();
+    while(module != Module_Deal_Hash.end())
+    {
+        if (!Port_Send_Deal(module.value()))
+        {
+            break;
+        }
+        ++module;
+    }
+}
+
+
+
+
+
+
+
 
 
 
@@ -193,4 +381,13 @@ void MainWindow::paintEvent(QPaintEvent *event)
     painter.drawRect(Tool_Bar->x(), Tool_Bar->y(), Tool_Bar->width(), Tool_Bar->height());
 }
 
+
+
+/*关闭事件重写----------------------------------------------------------------------------------------------*/
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    Q_UNUSED(event);
+
+    exit(0);
+}
 

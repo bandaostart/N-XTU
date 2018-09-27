@@ -30,26 +30,28 @@ public:
     bool SerialOpen(const SerialPortSettings &serail_port_settings);
     void SerialClose(void);
 
-    void SerialTxData(QString &tx_data);
+    void SerialTxData(const unsigned char *tx_data, unsigned short tx_num);
     void run() Q_DECL_OVERRIDE;
 
 
 signals:
-    void SerialRxData(QString &rx_data);
+    void SerialRxData(const QString &portname,  unsigned char *rx_data, unsigned short rx_num);
 
+
+private slots:
+    void SerialRxFlag();
 
 private:
-    bool               Port_Status;
     QSerialPort        Serial_Port;
     SerialPortSettings m_Serial_Port_Settings;
-    QByteArray         Tx_Data;
-    QString            Rx_Data;
+    unsigned char      Tx_Data[512];
+    qint64             Tx_Num;
+    unsigned char      Rx_Data[512];
+    qint64             Rx_Num;
 
 private:
     QMutex             mutex;
     QWaitCondition     cond;
-    bool               ThreadStatus;
-
 };
 
 

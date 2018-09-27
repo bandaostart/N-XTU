@@ -30,7 +30,9 @@ SOURCES += main.cpp\
     leftwindow.cpp \
     rightwindow.cpp \
     consolewindow.cpp \
-    modulewindow.cpp
+    modulewindow.cpp \
+    protocol.cpp \
+    searchdialog.cpp
 
 HEADERS  += mainwindow.h \
     serialthread.h \
@@ -38,10 +40,9 @@ HEADERS  += mainwindow.h \
     leftwindow.h \
     rightwindow.h \
     consolewindow.h \
-    modulewindow.h
+    modulewindow.h \
+    protocol.h \
+    searchdialog.h
 
 RESOURCES += \
     src.qrc
-
-FORMS += \
-    serialdialog.ui

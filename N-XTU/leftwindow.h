@@ -12,11 +12,22 @@
 #include "modulewindow.h"
 #include "serialthread.h"
 
-struct ModuleDeal {
-    SerialThread *serialThread;
-    ModuleWindow *moduleWindow;
 
+struct SerialTxRxPara
+{
+    unsigned char func_type;
+    unsigned char frame_id;
+    unsigned char tx_num;
+    unsigned int  tx_interval;
+    unsigned int  tx_count;
 };
+
+struct ModuleDeal {
+    SerialThread   *serialThread;
+    ModuleWindow   *moduleWindow;
+    SerialTxRxPara *serialtxrxPara;
+};
+
 
 class LeftWindow : public QMainWindow
 {

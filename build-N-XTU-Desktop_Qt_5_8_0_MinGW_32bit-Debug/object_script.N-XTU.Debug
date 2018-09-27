@@ -7,6 +7,8 @@ INPUT(
 ./debug\rightwindow.o
 ./debug\consolewindow.o
 ./debug\modulewindow.o
+./debug\protocol.o
+./debug\searchdialog.o
 ./debug\qrc_src.o
 ./debug\moc_mainwindow.o
 ./debug\moc_serialthread.o
@@ -15,4 +17,5 @@ INPUT(
 ./debug\moc_rightwindow.o
 ./debug\moc_consolewindow.o
 ./debug\moc_modulewindow.o
+./debug\moc_searchdialog.o
 );

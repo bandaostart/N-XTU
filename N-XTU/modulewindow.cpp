@@ -32,14 +32,6 @@ void ModuleWindow::Creat_MainDisArea(QVector<QString> &text)
 
     Label = new QLabel(this);
     Label->setGeometry(0,5,60,90);
-    if (text.at(0) == "DM")
-    {
-      Label->setPixmap(QPixmap(":/image/xbee_digimesh_64.png"));
-    }
-    else
-    {
-      Label->setPixmap(QPixmap(":/image/xbee_digipoint_64.png"));
-    }
 
 
     QFont font;
@@ -117,6 +109,26 @@ void ModuleWindow::Creat_Layout()
         this->resize(350, 100);
         this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
         this->setCursor(QCursor(Qt::PointingHandCursor));
+}
+
+
+
+/*窗体部件信息设置-----------------------------------------------------------------------------------------------------*/
+void ModuleWindow::ModuleInfo_Set()
+{
+    if (Text_Content[0] == "DM")
+    {
+      Label->setPixmap(QPixmap(":/image/xbee_digimesh_64.png"));
+    }
+    else
+    {
+      Label->setPixmap(QPixmap(":/image/xbee_digipoint_64.png"));
+    }
+
+    Name_Text[0]->setText(Text_Content[1]);
+    Name_Text[1]->setText(Text_Content[2]);
+    Name_Text[2]->setText(Text_Content[3]);
+    Name_Text[3]->setText(Text_Content[4]);
 }
 
 
