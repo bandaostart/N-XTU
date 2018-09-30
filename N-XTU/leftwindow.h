@@ -20,6 +20,8 @@ struct SerialTxRxPara
     unsigned char tx_num;
     unsigned int  tx_interval;
     unsigned int  tx_count;
+    unsigned int  search_count;
+    unsigned int  search_total_count;
 };
 
 struct ModuleDeal {

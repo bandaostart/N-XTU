@@ -2,7 +2,9 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
-#include <QCommandLinkButton>
+#include <QLabel>
+#include <QProgressBar>
+#include <QPushButton>
 
 
 class SearchDialog : public QDialog
@@ -13,9 +15,24 @@ public:
     explicit SearchDialog(QWidget *parent = 0);
     ~SearchDialog();
 
-private:
+public:
+    void Set_SearchDisplay(int count, int total_num);
+    void Open_SearchDialog();
+    void Close_SearchDialog();
 
-    QCommandLinkButton *Cancel_Button;
+signals:
+    void Signal_DialogClose();
+private slots:
+    void Slot_Dialog_Close();
+
+
+private:
+    QLabel       *Pixmap_Label;
+    QLabel       *TopText_Label;
+    QLabel       *BottomText_Label;
+    QProgressBar *Progree_Bar;
+    QPushButton  *Cancel_Button;
+    QPixmap      Pixmap[7];
 
 };
 

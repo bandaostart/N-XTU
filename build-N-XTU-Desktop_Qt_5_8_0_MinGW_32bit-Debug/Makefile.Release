@@ -397,6 +397,12 @@ release/moc_mainwindow.cpp: C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QMain
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qrubberband.h \
 		../N-XTU/protocol.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/QString \
+		../N-XTU/searchdialog.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QProgressBar \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qprogressbar.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QPushButton \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qpushbutton.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qabstractbutton.h \
 		../N-XTU/mainwindow.h \
 		release/moc_predefs.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/bin/moc.exe
@@ -1268,6 +1274,15 @@ release/moc_searchdialog.cpp: C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QDi
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/qfiledevice.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtGui/qvector2d.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtGui/qtouchdevice.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QLabel \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qlabel.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qframe.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QProgressBar \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qprogressbar.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QPushButton \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qpushbutton.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qabstractbutton.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtGui/qicon.h \
 		../N-XTU/searchdialog.h \
 		release/moc_predefs.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/bin/moc.exe
@@ -1477,6 +1492,12 @@ release/main.o: ../N-XTU/main.cpp ../N-XTU/mainwindow.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qrubberband.h \
 		../N-XTU/protocol.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/QString \
+		../N-XTU/searchdialog.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QProgressBar \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qprogressbar.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QPushButton \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qpushbutton.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qabstractbutton.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QApplication \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qapplication.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/qcoreapplication.h \
@@ -1673,7 +1694,13 @@ release/mainwindow.o: ../N-XTU/mainwindow.cpp ../N-XTU/mainwindow.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qtabbar.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qrubberband.h \
 		../N-XTU/protocol.h \
-		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/QString
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/QString \
+		../N-XTU/searchdialog.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QProgressBar \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qprogressbar.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QPushButton \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qpushbutton.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qabstractbutton.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\mainwindow.o ..\N-XTU\mainwindow.cpp
 
 release/serialthread.o: ../N-XTU/serialthread.cpp ../N-XTU/serialthread.h \
@@ -2751,7 +2778,16 @@ release/searchdialog.o: ../N-XTU/searchdialog.cpp ../N-XTU/searchdialog.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/qfile.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtCore/qfiledevice.h \
 		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtGui/qvector2d.h \
-		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtGui/qtouchdevice.h
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtGui/qtouchdevice.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QLabel \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qlabel.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qframe.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QProgressBar \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qprogressbar.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/QPushButton \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qpushbutton.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtWidgets/qabstractbutton.h \
+		C:/Qt/Qt5.8.0/5.8/mingw53_32/include/QtGui/qicon.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\searchdialog.o ..\N-XTU\searchdialog.cpp
 
 release/qrc_src.o: release/qrc_src.cpp 

@@ -38,8 +38,6 @@ signals:
     void SerialRxData(const QString &portname,  unsigned char *rx_data, unsigned short rx_num);
 
 
-private slots:
-    void SerialRxFlag();
 
 private:
     QSerialPort        Serial_Port;
@@ -52,6 +50,7 @@ private:
 private:
     QMutex             mutex;
     QWaitCondition     cond;
+    bool               threadquit;
 };
 
 

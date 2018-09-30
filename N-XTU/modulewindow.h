@@ -11,6 +11,7 @@
 #include <QCursor>
 #include <QMouseEvent>
 #include <QGroupBox>
+#include <QDebug>
 
 
 

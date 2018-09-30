@@ -10,12 +10,14 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QDebug>
+#include <QThread>
 #include "leftwindow.h"
 #include "rightwindow.h"
 #include "serialdialog.h"
 #include "serialthread.h"
 #include "modulewindow.h"
 #include "protocol.h"
+#include "searchdialog.h"
 
 
 
@@ -31,9 +33,11 @@ private:
     QToolBar       *Tool_Bar;
     QMenuBar       *Menu_Bar;
 
+    SearchDialog   search_dialog;
     LeftWindow     *left_window;
     RightWindow    *right_window;
     QSplitter      *splitter;
+
 
     SerialDialog   *Serial_Dialog;
     QHash<QString, ModuleDeal *>   Module_Deal_Hash;

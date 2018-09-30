@@ -93,6 +93,10 @@ void MainWindow::Creat_ToolBar()
 /*创建主窗体---------------------------------------------------------------------------------------------------*/
 void MainWindow::Creat_CentralWidget()
 {
+    //创建搜索对话框
+    //search_dialog  = new SearchDialog(this);
+
+
     //定义串口对话框
     Serial_Dialog = new SerialDialog();
 
@@ -179,10 +183,12 @@ void MainWindow::Add_Module_Deal()
 
         //模块串口发送接收相关参数创建
         Module_Deal->serialtxrxPara = new SerialTxRxPara;
-        Module_Deal->serialtxrxPara->func_type   = MODULE_REQ_NULL;
-        Module_Deal->serialtxrxPara->frame_id    = 0x00;
-        Module_Deal->serialtxrxPara->func_type   = 0x00;
-        Module_Deal->serialtxrxPara->tx_interval = 0x00;
+        Module_Deal->serialtxrxPara->func_type           = MODULE_REQ_NULL;
+        Module_Deal->serialtxrxPara->frame_id            = 0x00;
+        Module_Deal->serialtxrxPara->func_type           = 0x00;
+        Module_Deal->serialtxrxPara->tx_interval         = 0x00;
+        Module_Deal->serialtxrxPara->search_count        = 0x01;
+        Module_Deal->serialtxrxPara->search_total_count  = 0x01;
 
 
         //插入到hash中
@@ -193,7 +199,12 @@ void MainWindow::Add_Module_Deal()
     //打开串口
     if (!Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread->SerialOpen(Serial_Dialog->Serial_Port_Settings))
     {
+        //打开串口失败，从Qhash中删除
+        delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->moduleWindow;
+        delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread;
+        delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialtxrxPara;
         Module_Deal_Hash.remove(Serial_Dialog->Serial_Port_Settings.portName);
+
         QMessageBox::critical(NULL, "Error discovering device",
                              Serial_Dialog->Serial_Port_Settings.portName +" > Port Open Failed: Port not valid                           ", QMessageBox::Ok);
     }
@@ -201,11 +212,16 @@ void MainWindow::Add_Module_Deal()
     {
         //请求模块相关信息
         auto temp_serialtxrxPara = Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialtxrxPara;
-        temp_serialtxrxPara->func_type   = MODULE_TYPE_REQ_FUN;
-        temp_serialtxrxPara->frame_id    = 0x01;
-        temp_serialtxrxPara->tx_num      = MODULE_TYPE_REQ_NUM;
-        temp_serialtxrxPara->tx_interval = MODULE_TYPE_REQ_INTERVAL;
-        temp_serialtxrxPara->tx_count    = 0x00;
+        temp_serialtxrxPara->func_type          = MODULE_TYPE_REQ_FUN;
+        temp_serialtxrxPara->frame_id           = 0x01;
+        temp_serialtxrxPara->tx_num             = MODULE_TYPE_REQ_NUM;
+        temp_serialtxrxPara->tx_interval        = MODULE_TYPE_REQ_INTERVAL;
+        temp_serialtxrxPara->tx_count           = 0x00;
+        temp_serialtxrxPara->search_count       = 0x01;
+        temp_serialtxrxPara->search_total_count = MODULE_TYPE_REQ_NUM;
+
+        //显示搜索对话框
+        search_dialog.show();
     }
 }
 
@@ -247,17 +263,29 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                 {
                     if (module_deal->serialtxrxPara->tx_num == 0)
                     {
-                        //左侧窗口添加模块对话框
-                        module_deal->serialtxrxPara->func_type   = MODULE_REQ_NULL;
-                        module_deal->serialtxrxPara->tx_num      = 0x00;
-                        module_deal->serialtxrxPara->tx_interval = 0x00;
-                        module_deal->serialtxrxPara->tx_count    = 0x00;
+                        //关闭搜索显示对话框
+                        emit search_dialog.Signal_DialogClose();
 
+                        //左侧窗口添加模块对话框
+                        module_deal->serialtxrxPara->func_type          = MODULE_REQ_NULL;
+                        module_deal->serialtxrxPara->tx_num             = 0x00;
+                        module_deal->serialtxrxPara->tx_interval        = 0x00;
+                        module_deal->serialtxrxPara->tx_count           = 0x00;
+                        module_deal->serialtxrxPara->search_count       = 0x01;
+                        module_deal->serialtxrxPara->search_total_count = 0x01;
+
+                        //设置module模块参数
                         module_deal->moduleWindow->ModuleInfo_Set();
+
+                        //添加module window模块
                         left_window->Add_SubWidget(Module_Deal_Hash);
                     }
                     else
                     {
+                        //设置搜索对话框进度条变动
+                        search_dialog.Set_SearchDisplay(module_deal->serialtxrxPara->search_count, module_deal->serialtxrxPara->search_total_count);
+
+                        //发送请求命令
                         AT_Com_ReqType(module_deal, tx_buf, tx_num);
                         module_deal->serialThread->SerialTxData(tx_buf, tx_num);
                     }
@@ -266,8 +294,17 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                 {
                     if (module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval)
                     {
+                        //等待应答超时，关闭串口从Qhash中删除
                         module_deal->serialThread->SerialClose();
+                        delete module_deal->moduleWindow;
+                        delete module_deal->serialThread;
+                        delete module_deal->serialtxrxPara;
                         Module_Deal_Hash.remove(Serial_Dialog->Serial_Port_Settings.portName);
+
+                        //发送搜索对话框关闭消息
+                        emit search_dialog.Signal_DialogClose();
+
+                        //告警提示
                         QMessageBox::critical(NULL, "Error discovering device",
                                               module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         return false;
@@ -312,6 +349,9 @@ void MainWindow::Open_SerialDialog()
 void MainWindow::Delete_SerialPort(const QString &portname)
 {
     Module_Deal_Hash.value(portname)->serialThread->SerialClose();
+
+    delete Module_Deal_Hash.value(portname)->serialThread;
+    delete Module_Deal_Hash.value(portname)->serialtxrxPara;
 
     Module_Deal_Hash.remove(portname);
 }

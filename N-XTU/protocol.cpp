@@ -66,6 +66,7 @@ bool AT_Com_ReqType(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
         para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
 
         para->tx_num--;
+        para->search_count++;
 
         return true;
     }

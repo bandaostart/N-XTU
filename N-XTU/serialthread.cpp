@@ -10,20 +10,17 @@ QT_USE_NAMESPACE
 //构造函数初始化，调用基类构造函数对基类进行初始化，列表初始化
 SerialThread::SerialThread(QObject *parent) : QThread(parent)
 {
-    connect(&Serial_Port, &QSerialPort::readyRead, this, &SerialThread::SerialRxFlag);
+    threadquit = false;
 }
 
 
 SerialThread::~SerialThread()
 {
     mutex.lock();
-
-    if (Serial_Port.isOpen())
-    {
-        Serial_Port.close();
-    }
-
+    threadquit = true;
     mutex.unlock();
+
+    wait();
 }
 
 
@@ -60,10 +57,20 @@ bool SerialThread::SerialOpen(const SerialPortSettings &serail_port_settings)
 
     if (!Serial_Port.open(QIODevice::ReadWrite))
     {
+        if (isRunning())
+        {
+         quit();
+        }
+
         return false;
     }
     else
     {
+        if (!isRunning())
+        {
+            start();
+        }
+
         return true;
     }
 }
@@ -77,8 +84,12 @@ void SerialThread::SerialClose(void)
     if (Serial_Port.isOpen())
     {
         Serial_Port.close();
-        msleep(10);
     }
+    msleep(10);
+
+    threadquit = true;
+
+    quit();
 }
 
 
@@ -106,31 +117,39 @@ void SerialThread::SerialTxData(const unsigned char *tx_data, unsigned short tx_
 
 void SerialThread::run()
 {
-    while (1)
+    while (!threadquit)
     {
+        if (Serial_Port.isOpen())
+        {
+            if (Serial_Port.bytesAvailable())
+            {
+                QByteArray    rx_data;
+                unsigned char num = 0;
+
+                while (num <= 5)
+                {
+                    num++;
+                    msleep(1);
+                    if(Serial_Port.bytesAvailable())
+                    {
+                        num = 0;
+                        rx_data += Serial_Port.readAll();
+                    }
+                }
+
+                Rx_Num  = 0;
+                Rx_Num  = rx_data.length();
+                memcpy(Rx_Data, rx_data.data(), Rx_Num);
+
+                if (Rx_Num)
+                {
+                    emit this->SerialRxData(m_Serial_Port_Settings.portName, Rx_Data, Rx_Num);
+                }
+            }
+        }
     }
 }
 
-
-
-void SerialThread::SerialRxFlag()
-{
-    QByteArray rx_data;
-
-    while (Serial_Port.waitForReadyRead(5))
-    {
-        rx_data += Serial_Port.readAll();
-    }
-
-    Rx_Num  = 0;
-    Rx_Num  = rx_data.length();
-    memcpy(Rx_Data, rx_data.data(), Rx_Num);
-
-    if (Rx_Num)
-    {
-        emit this->SerialRxData(m_Serial_Port_Settings.portName, Rx_Data, Rx_Num);
-    }
-}
 
 
 
