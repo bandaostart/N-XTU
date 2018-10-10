@@ -66,6 +66,7 @@ private slots:
     void Delete_SerialPort(const QString &portname);
     void Receive_SerialPort(const QString &portname,  unsigned char *rx_data,  unsigned short rx_num);
     void Send_SerialPort();
+    void Close_SearchDialog(const QString &portname);
 
     void Application_Exit();
 

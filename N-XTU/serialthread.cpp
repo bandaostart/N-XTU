@@ -105,6 +105,20 @@ void SerialThread::SerialTxData(const unsigned char *tx_data, unsigned short tx_
         Tx_Num = tx_num;
         memcpy(Tx_Data, tx_data, Tx_Num);
 
+        {
+            QString str = "TX ";
+            for (int i=0; i<Tx_Num; i++)
+            {
+                if(Tx_Data[i] < 16)
+                {
+                    str += "0";
+                }
+                str += QString::number(Tx_Data[i] & 0xFF, 16).toUpper();
+                str += " ";
+            }
+            qDebug() << str;
+        }
+
         Serial_Port.write((const char *)Tx_Data, Tx_Num);
 
         Serial_Port.waitForBytesWritten(3);
@@ -126,7 +140,7 @@ void SerialThread::run()
                 QByteArray    rx_data;
                 unsigned char num = 0;
 
-                while (num <= 5)
+                while (num <= 20)
                 {
                     num++;
                     msleep(1);
@@ -143,6 +157,18 @@ void SerialThread::run()
 
                 if (Rx_Num)
                 {
+                    QString str = "RX ";
+                    for (int i=0; i<Rx_Num; i++)
+                    {
+                        if(Rx_Data[i] < 16)
+                        {
+                            str += "0";
+                        }
+                        str += QString::number(Rx_Data[i] & 0xFF, 16).toUpper();
+                        str += " ";
+                    }
+                    qDebug() << str;
+
                     emit this->SerialRxData(m_Serial_Port_Settings.portName, Rx_Data, Rx_Num);
                 }
             }

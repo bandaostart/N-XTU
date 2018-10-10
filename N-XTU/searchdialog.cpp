@@ -39,7 +39,7 @@ SearchDialog::SearchDialog(QWidget *parent) :QDialog(parent)
     Cancel_Button = new QPushButton("Cancel", this);
     Cancel_Button->setIcon(QIcon(":/image/error.png"));
     Cancel_Button->setGeometry(364, 80, 90, 25);
-    connect(Cancel_Button, &QPushButton::clicked, this, &QWidget::close);
+    connect(Cancel_Button, &QPushButton::clicked, this, &SearchDialog::Cancel_Button_Close);
 
 
 
@@ -73,17 +73,17 @@ void SearchDialog::Slot_Dialog_Close()
     this->close();
 }
 
-void SearchDialog::Open_SearchDialog()
-{
 
+
+void SearchDialog::Cancel_Button_Close()
+{
+    this->close();
+
+    emit this->Signal_CancelClose(Port_Name);
 }
 
 
 
-void SearchDialog::Close_SearchDialog()
-{
-
-}
 
 
 

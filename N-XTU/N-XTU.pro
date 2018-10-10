@@ -46,3 +46,6 @@ HEADERS  += mainwindow.h \
 
 RESOURCES += \
     src.qrc
+
+FORMS += \
+    serialdialog.ui

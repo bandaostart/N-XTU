@@ -22,6 +22,7 @@ struct SerialTxRxPara
     unsigned int  tx_count;
     unsigned int  search_count;
     unsigned int  search_total_count;
+    unsigned int  search_total_flag;
 };
 
 struct ModuleDeal {

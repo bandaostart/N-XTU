@@ -160,8 +160,14 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
             AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
             for (int i=0; i<AT_Length; i++)
             {
+                if(rx_buf[XbeeApi_ATCom_Rsp_len+i] < 16)
+                {
+                    temp_str += "0";
+                }
                 temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
             }
+
+
             module->Text_Content[4] = temp_str;
             module_deal->serialtxrxPara->tx_count = 0x00;
 
@@ -173,6 +179,10 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
             AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
             for (int i=0; i<AT_Length; i++)
             {
+                if(rx_buf[XbeeApi_ATCom_Rsp_len+i] < 16)
+                {
+                    temp_str += "0";
+                }
                 temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
             }
             module->Text_Content[4] += temp_str;

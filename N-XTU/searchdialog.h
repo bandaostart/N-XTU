@@ -17,13 +17,14 @@ public:
 
 public:
     void Set_SearchDisplay(int count, int total_num);
-    void Open_SearchDialog();
-    void Close_SearchDialog();
 
 signals:
     void Signal_DialogClose();
+    void Signal_CancelClose(const QString &portname);
+
 private slots:
     void Slot_Dialog_Close();
+    void Cancel_Button_Close();
 
 
 private:
@@ -33,6 +34,9 @@ private:
     QProgressBar *Progree_Bar;
     QPushButton  *Cancel_Button;
     QPixmap      Pixmap[7];
+
+public:
+    QString      Port_Name;
 
 };
 
