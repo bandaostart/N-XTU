@@ -113,6 +113,9 @@
 #define         DN                                      CONVERSION('D', 'N')
 #define         IS                                      CONVERSION('I', 'S')
 
+//射频测试
+#define         RT                                      CONVERSION('R', 'T')    //射频发送测试
+#define         RR                                      CONVERSION('R', 'R')    //射频接收测试
 
 
 #define API_START_DATA                                  0x7E                    //起始数据
@@ -522,7 +525,7 @@ typedef struct
 /*用户变量定义---------------------------------------------------------------------------------*/
 #define MODULE_REQ_NULL                   0xFF                                    //无命令发送
 #define MODULE_TYPE_REQ_FUN               0x01                                    //设备信息类型请求
-
+#define MODULE_RADIO_TEST_FUN             0x02                                    //射频参数测试
 
 
 

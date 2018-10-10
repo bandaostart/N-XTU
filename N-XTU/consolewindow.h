@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QTextEdit>
+#include <QMenu>
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -23,6 +24,25 @@ public:
 
 private:
     void paintEvent(QPaintEvent *event) override;
+
+signals:
+    void Signal_Testing_State(const bool &state);
+
+public slots:
+    void Start_RfTesting();
+    void Communication_Display(const QString &str);
+    void Record_MenuText(QPoint);
+
+private:
+    void Creat_TopToolBar();
+    void Creat_LeftToolBar();
+    void Creat_MasterDisAre();
+    void Creat_SlaveDisAre();
+    void Creat_RecordDisAre();
+    void Creat_Layout();
+    void Init_Para();
+
+
 
 private:
     enum {NumTestRow = 8};
@@ -50,10 +70,16 @@ private:
 
     QGroupBox   *Right_Group_Box;
     QLabel      *Record_Label;
+    QMenu       *Record_Menu;
+    QAction     *Record_Clear;
+    QAction     *Record_SelectAll;
     QTextEdit   *Record_Text;
     QVBoxLayout *Right_Box_Layout;
 
     QGridLayout *Grid_Layout;
+
+    bool         Testing_State;
+
 };
 
 #endif // CONSOLEWINDOW_H

@@ -4,7 +4,40 @@
 ConsoleWindow::ConsoleWindow(QWidget *parent) :
     QWidget(parent)
 {
-    /*Top Bar----------------------------------------------------------------------------------------------*/
+    //创建上侧工具栏
+    Creat_TopToolBar();
+
+    //创建左侧工具栏
+    Creat_LeftToolBar();
+
+    //创建主显示区域
+    Creat_MasterDisAre();
+
+    //创建从显示区域
+    Creat_SlaveDisAre();
+
+    //创建记录显示区域
+    Creat_RecordDisAre();
+
+    //创建布局区域
+    Creat_Layout();
+
+    //参数初始化
+    Init_Para();
+}
+
+
+ConsoleWindow::~ConsoleWindow()
+{
+
+}
+
+
+
+
+/*创建上侧工具栏------------------------------------------------------------------------------*/
+void ConsoleWindow::Creat_TopToolBar()
+{
     Top_Tool_Bar = new QToolBar(this);
     Top_Tool_Bar->setIconSize(QSize(48, 48));
     Top_Tool_Bar->setMovable(false);
@@ -16,8 +49,15 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) :
     Top_Tool_Bar->addAction(Record_Action);
 
 
+    connect(Start_Action, &QAction::triggered, this, &ConsoleWindow::Start_RfTesting);
+}
 
-    /*Left Bar--------------------------------------------------------------------------------------------*/
+
+
+
+/*创建左侧工具栏-----------------------------------------------------------------------------*/
+void ConsoleWindow::Creat_LeftToolBar()
+{
     Left_Tool_Bar = new QToolBar(this);
     Left_Tool_Bar->setOrientation( Qt::Vertical);
     Left_Tool_Bar->setIconSize(QSize(48, 48));
@@ -40,16 +80,21 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) :
     Left_Tool_Bar->addWidget(Space[2]);
     Left_Tool_Bar->addAction(Slave_Action);
     Left_Tool_Bar->addWidget(Space[3]);
+}
 
 
-    /*Test items---------------------------------------------------------------------------------------*/
+/*创建主显示区域----------------------------------------------------------------------------*/
+void ConsoleWindow::Creat_MasterDisAre()
+{
     QFont font;
     font.setBold(true);
     font.setFamily(QString::fromUtf8("Arial"));
     font.setWeight(80);
 
     Top_Group_Box    = new QGroupBox(this);
-    Top_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
+    //Top_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
+    Top_Group_Box->setTitle("COM10");
+
     for (int i=0; i<NumTestRow; i++)
     {
         NameLabel[i] = new QLabel(Top_Group_Box);
@@ -115,34 +160,59 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) :
     }
     Top_Box_Layout->addWidget(StatusText, 0, 3, 1, 1);
     Top_Box_Layout->addWidget(StatusPix, 1, 3, 3, 1);
+}
 
 
-    /*Slave Items-------------------------------------------------------------------------------*/
+/*创建从显示区域-----------------------------------------------------------------------------*/
+void ConsoleWindow::Creat_SlaveDisAre()
+{
     Bottom_Group_Box = new QGroupBox(this);
-    Bottom_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
+    //Bottom_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
+    Bottom_Group_Box->setTitle("COM10");
+}
 
 
-    /*Record Items-----------------------------------------------------------------------------*/
+
+/*创建记录区域------------------------------------------------------------------------------*/
+void ConsoleWindow::Creat_RecordDisAre()
+{
     Right_Group_Box   = new QGroupBox(this);
-    Right_Group_Box->setMinimumWidth(250);
-    Right_Group_Box->setMaximumWidth(250);
+    Right_Group_Box->setMinimumWidth(330);
+    Right_Group_Box->setMaximumWidth(330);
     Right_Group_Box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     Right_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
+
 
     Record_Label =  new QLabel(Right_Group_Box);
     Record_Label->setPixmap(QPixmap(":/image/xbee_loading1.png"));
     Record_Label->setGeometry(0, 0, 64, 64);
 
+
     Record_Text  = new QTextEdit(Right_Group_Box);
     Record_Text->setGeometry(5, 64, 100, 100);
+    Record_Text->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    Record_Clear = new QAction(QIcon(":/image/delete.png"), tr("Clear Text"), this);
+    connect(Record_Clear, &QAction::triggered, Record_Text, &QTextEdit::clear);
+    Record_SelectAll = new QAction(QIcon(":/image/micropython_console.png"), tr("Select All"), this);
+    connect(Record_SelectAll, &QAction::triggered, Record_Text, &QTextEdit::selectAll);
+
+    Record_Menu  = new QMenu(Right_Group_Box);
+    Record_Menu->addAction(Record_Clear);
+    Record_Menu->addAction(Record_SelectAll);
+
+    connect(Record_Text, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Record_MenuText(QPoint)));
+
 
     Right_Box_Layout =  new QVBoxLayout(Right_Group_Box);
     Right_Box_Layout->addWidget(Record_Label);
     Right_Box_Layout->addWidget(Record_Text);
+}
 
 
-
-    /*Grid Layout-----------------------------------------------------------------------------*/
+/*创建布局区域----------------------------------------------------------------------------*/
+void ConsoleWindow::Creat_Layout()
+{
     Grid_Layout      = new QGridLayout(this);
     Grid_Layout->addWidget(Top_Tool_Bar,  0, 0, 1, 3);
     Grid_Layout->addWidget(Left_Tool_Bar, 1, 0, 2, 1);
@@ -152,13 +222,64 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) :
 }
 
 
-ConsoleWindow::~ConsoleWindow()
+/*参数初始化----------------------------------------------------------------------------*/
+void ConsoleWindow::Init_Para()
 {
-
+    Testing_State = false;
 }
 
 
 
+
+
+
+
+
+/*开启测试 槽函数------------------------------------------------------------------------*/
+void ConsoleWindow::Start_RfTesting()
+{
+    if (Testing_State)
+    {
+        Testing_State = false;
+        Start_Action->setIcon(QIcon(":/image/network_start.png"));
+        Connect_Action->setIcon(QIcon(":/image/connect.png"));
+    }
+    else
+    {
+        Testing_State = true;
+        Start_Action->setIcon(QIcon(":/image/network_stop.png"));
+        Connect_Action->setIcon(QIcon(":/image/disconnect.png"));
+    }
+    emit this->Signal_Testing_State(Testing_State);
+}
+
+
+
+/*通讯显示 槽函数----------------------------------------------------------------------*/
+void ConsoleWindow::Communication_Display(const QString &str)
+{
+    Record_Text->insertPlainText(str);
+    Record_Text->insertPlainText("\n\n");
+    Record_Text->moveCursor(QTextCursor::End);
+}
+
+
+
+/*TextEdit鼠标右键重写 槽函数----------------------------------------------------------*/
+void ConsoleWindow::Record_MenuText(QPoint)
+{
+    Record_Menu->move (cursor().pos());
+    Record_Menu->show();
+}
+
+
+
+
+
+
+
+
+/*窗体重绘事件--------------------------------------------------------------------------------*/
 void ConsoleWindow::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);

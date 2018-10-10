@@ -56,5 +56,7 @@
         <file>image/xbee_search5.png</file>
         <file>image/xbee_search6.png</file>
         <file>image/xbee_search7.png</file>
+        <file>image/read_settings.png</file>
+        <file>image/micropython_console.png</file>
     </qresource>
 </RCC>

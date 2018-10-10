@@ -2,20 +2,29 @@
 #define PROTOCOL_C
 
 #include <stddef.h>
+#include <QVector>
 #include "protocol.h"
 
 #endif
 
 
 
+/*命令参数配置---------------------------------------------------------------------*/
 uint8_t  Frame_ID = 0;
-uint16_t AT_TypeReq[MODULE_TYPE_REQ_NUM] = {
-    VR,
-    NI,
-    AP,
-    SH,
-    SL,
-};
+
+//设备信息读取命令
+QVector<uint16_t> AT_TypeReq{VR, NI, AP, SH, SL};
+
+//射频参数读取命令
+QVector<uint16_t> AT_ReadID{SH, SL};
+
+//射频发送命令测试
+QVector<uint16_t> AT_RfTx(10, RT);
+
+
+
+
+
 uint8_t  XbeePro_CheckSum(uint8_t length, uint8_t *input);
 bool     AT_Com_ReqType(ModuleDeal *module_deal, uint8_t *tx_buf, uint16_t &tx_num);
 
@@ -109,12 +118,12 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
             if (temp_str == "21A7")
             {
                 module->Text_Content[0] = "DM";
-                module->Text_Content[2] = "Zigbee Master ";
+                module->Text_Content[2] = "NBee N3H Master ";
             }
             else
             {
                 module->Text_Content[0] = "DP";
-                module->Text_Content[2] = "Zigbee Slave ";
+                module->Text_Content[2] = "NBee N3H Slave ";
             }
             module_deal->serialtxrxPara->tx_count = 0x00;
 
@@ -123,10 +132,10 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 
         case NI:                                                 //节点标识
         {
-            AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 2);
+            AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
             for (int i=0; i<AT_Length; i++)
             {
-                temp_str += rx_buf[XbeeApi_ATCom_Rsp_len+1+i];
+                temp_str += rx_buf[XbeeApi_ATCom_Rsp_len+i];
             }
 
             module->Text_Content[1] = temp_str;

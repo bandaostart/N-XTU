@@ -47,7 +47,7 @@ void ModuleWindow::Creat_MainDisArea(QVector<QString> &text)
     {
         Name[i]  = new QLabel(GroupBox);
         Name[i]->setFont(font);
-        Name[i]->setGeometry(0, i*21+6, 70, 15);
+        Name[i]->setGeometry(0, i*21+6, 60, 15);
         Name[i]->setAlignment(Qt::AlignRight);
     }
     Name[0]->setText("Name:");
@@ -61,7 +61,7 @@ void ModuleWindow::Creat_MainDisArea(QVector<QString> &text)
     {
         Name_Text[i] = new QLabel(GroupBox);
         Name_Text[i]->setFont(font);
-        Name_Text[i]->setGeometry(80, i*21+6, 140, 15);
+        Name_Text[i]->setGeometry(65, i*21+6, 140, 15);
         Name_Text[i]->setAlignment(Qt::AlignLeft);
     }
     Name_Text[0]->setText(text.at(1));

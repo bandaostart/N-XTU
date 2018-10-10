@@ -17,7 +17,7 @@ public:
     explicit RightWindow(QWidget *parent = 0);
     ~RightWindow();
 
-private:
+public:
     QToolBar      *Tool_Bar;
     ConsoleWindow *Console_Window;
 

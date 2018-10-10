@@ -44,6 +44,10 @@ private:
 
     QTimer         *SerialTx_Timer;
 
+    enum {ReadNodeID = 0, RfTransmit, RfReceive, CurrentTransmit, CurrentReceive, CurrentSleep, CrystalOsc};
+    unsigned char  *Test_Run_State;
+
+
 
 private:
     void paintEvent(QPaintEvent *event) override;
@@ -55,7 +59,7 @@ private:
     void Creat_SerialTxTimer();
     void Set_WidgetAttributes();
 
-    void Add_Module_Deal();
+    void Add_ModuleWindow_Deal();
 
     bool Port_Send_Deal(ModuleDeal *module_deal);
     void Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
@@ -63,10 +67,12 @@ private:
 
 private slots:
     void Open_SerialDialog();
-    void Delete_SerialPort(const QString &portname);
-    void Receive_SerialPort(const QString &portname,  unsigned char *rx_data,  unsigned short rx_num);
-    void Send_SerialPort();
+    void Close_ModuleWindow(const QString &portname);
+    void Receive_SerialMessage(const QString &portname,  unsigned char *rx_data,  unsigned short rx_num);
+    void Send_SerialMessage();
     void Close_SearchDialog(const QString &portname);
+
+    void Radio_Test_Deal(const bool &state);
 
     void Application_Exit();
 

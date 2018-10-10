@@ -102,7 +102,7 @@ void MainWindow::Creat_CentralWidget()
 
     //定义左窗体
     left_window  = new LeftWindow();
-    left_window->resize(350, 100);
+    left_window->resize(330, 100);
     left_window->setMinimumWidth(250);
 
     //定义右窗体
@@ -132,7 +132,7 @@ void MainWindow::Creat_SerialTxTimer()
 {
     SerialTx_Timer = new QTimer(this);
 
-    connect(SerialTx_Timer, SIGNAL(timeout()), this, SLOT(Send_SerialPort()));
+    connect(SerialTx_Timer, SIGNAL(timeout()), this, SLOT(Send_SerialMessage()));
     SerialTx_Timer->start(1);
 }
 
@@ -149,7 +149,7 @@ void MainWindow::Set_WidgetAttributes()
 
 
 /*串口模块添处理--------------------------------------------------------------------------------------------------------------------*/
-void MainWindow::Add_Module_Deal()
+void MainWindow::Add_ModuleWindow_Deal()
 {
     //判断hash表中是否已经存该串口
     if(!Module_Deal_Hash.contains(Serial_Dialog->Serial_Port_Settings.portName))
@@ -173,12 +173,12 @@ void MainWindow::Add_Module_Deal()
         Module_Deal->moduleWindow->Text_Content[3] = Serial_Dialog->Serial_Port_Settings.portName;
         Module_Deal->moduleWindow->Text_Content[4] = "";
 
-        connect(Module_Deal->moduleWindow, &ModuleWindow::Signal_ModuleWinClose, this, Delete_SerialPort);
+        connect(Module_Deal->moduleWindow, &ModuleWindow::Signal_ModuleWinClose, this, Close_ModuleWindow);
 
 
         //模块串口线程创建
         Module_Deal->serialThread = new SerialThread(this);
-        connect(Module_Deal->serialThread, &SerialThread::SerialRxData, this, Receive_SerialPort);
+        connect(Module_Deal->serialThread, &SerialThread::SerialRxData, this, Receive_SerialMessage);
 
 
         //模块串口发送接收相关参数创建
@@ -194,6 +194,10 @@ void MainWindow::Add_Module_Deal()
 
         //插入到hash中
         Module_Deal_Hash.insert(Serial_Dialog->Serial_Port_Settings.portName, Module_Deal);
+
+
+        //关联通讯显示消息和槽函数
+        connect(Module_Deal->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
     }
 
 
@@ -201,6 +205,7 @@ void MainWindow::Add_Module_Deal()
     if (!Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread->SerialOpen(Serial_Dialog->Serial_Port_Settings))
     {
         //打开串口失败，从Qhash中删除
+        disconnect(Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
         delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->moduleWindow;
         delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread;
         delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialtxrxPara;
@@ -310,6 +315,7 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         }
 
                         //等待应答超时，关闭串口从Qhash中删除
+                        disconnect(module_deal->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
                         module_deal->serialThread->SerialClose();
                         delete module_deal->moduleWindow;
                         delete module_deal->serialThread;
@@ -347,13 +353,13 @@ void MainWindow::Open_SerialDialog()
     Serial_Dialog->SerivalDiscover();
     if (Serial_Dialog->exec() == QDialog::Accepted)
     {
-        Add_Module_Deal();
+        Add_ModuleWindow_Deal();
     }
 }
 
 
 /*串口数据接收相应处理 槽函数-----------------------------------------------------------------------------------*/
-void MainWindow::Receive_SerialPort(const QString &portname, unsigned char *rx_data, unsigned short rx_num)
+void MainWindow::Receive_SerialMessage(const QString &portname, unsigned char *rx_data, unsigned short rx_num)
 {
     auto module_deal = Module_Deal_Hash.value(portname);
     Port_Receive_Deal(module_deal, rx_data, rx_num);
@@ -362,7 +368,7 @@ void MainWindow::Receive_SerialPort(const QString &portname, unsigned char *rx_d
 
 
 /*串口发送数据相应处理 槽函数-----------------------------------------------------------------------------------*/
-void MainWindow::Send_SerialPort()
+void MainWindow::Send_SerialMessage()
 {
     auto module = Module_Deal_Hash.begin();
     while(module != Module_Deal_Hash.end())
@@ -377,8 +383,10 @@ void MainWindow::Send_SerialPort()
 
 
 /*删除模块对话框后进行相应处理 槽函数-----------------------------------------------------------------------------*/
-void MainWindow::Delete_SerialPort(const QString &portname)
+void MainWindow::Close_ModuleWindow(const QString &portname)
 {
+    disconnect(Module_Deal_Hash.value(portname)->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
+
     Module_Deal_Hash.value(portname)->serialThread->SerialClose();
 
     delete Module_Deal_Hash.value(portname)->serialThread;
@@ -395,6 +403,22 @@ void MainWindow::Close_SearchDialog(const QString &portname)
     if (Module_Deal_Hash.contains(portname))
     {
         Module_Deal_Hash.value(portname)->serialtxrxPara->search_total_flag = 0x01;
+    }
+}
+
+
+
+/*射频测试处理 槽函数-------------------------------------------------------------------------------------------*/
+void MainWindow::Radio_Test_Deal(const bool &state)
+{
+    if (state)
+    {
+        //开始测试
+
+    }
+    else
+    {
+        //停止测试
     }
 }
 

@@ -98,6 +98,8 @@ void SerialThread::SerialClose(void)
 
 void SerialThread::SerialTxData(const unsigned char *tx_data, unsigned short tx_num)
 {
+    QString tx_str = "";
+
     if (Serial_Port.isOpen())
     {
         mutex.lock();
@@ -105,23 +107,23 @@ void SerialThread::SerialTxData(const unsigned char *tx_data, unsigned short tx_
         Tx_Num = tx_num;
         memcpy(Tx_Data, tx_data, Tx_Num);
 
-        {
-            QString str = "TX ";
-            for (int i=0; i<Tx_Num; i++)
-            {
-                if(Tx_Data[i] < 16)
-                {
-                    str += "0";
-                }
-                str += QString::number(Tx_Data[i] & 0xFF, 16).toUpper();
-                str += " ";
-            }
-            qDebug() << str;
-        }
-
         Serial_Port.write((const char *)Tx_Data, Tx_Num);
 
         Serial_Port.waitForBytesWritten(3);
+
+
+        tx_str = m_Serial_Port_Settings.portName;
+        tx_str += " Tx:";
+        for (int i=0; i<Tx_Num; i++)
+        {
+            if(Tx_Data[i] < 16)
+            {
+                tx_str += "0";
+            }
+            tx_str += QString::number(Tx_Data[i] & 0xFF, 16).toUpper();
+            tx_str += " ";
+        }
+        emit this->Communication_Text(tx_str);
 
         mutex.unlock();
     }
@@ -131,6 +133,8 @@ void SerialThread::SerialTxData(const unsigned char *tx_data, unsigned short tx_
 
 void SerialThread::run()
 {
+    QString rx_str = "";
+
     while (!threadquit)
     {
         if (Serial_Port.isOpen())
@@ -157,17 +161,18 @@ void SerialThread::run()
 
                 if (Rx_Num)
                 {
-                    QString str = "RX ";
+                    rx_str = m_Serial_Port_Settings.portName;
+                    rx_str += " Rx:";
                     for (int i=0; i<Rx_Num; i++)
                     {
                         if(Rx_Data[i] < 16)
                         {
-                            str += "0";
+                            rx_str += "0";
                         }
-                        str += QString::number(Rx_Data[i] & 0xFF, 16).toUpper();
-                        str += " ";
+                        rx_str += QString::number(Rx_Data[i] & 0xFF, 16).toUpper();
+                        rx_str += " ";
                     }
-                    qDebug() << str;
+                    emit this->Communication_Text(rx_str);
 
                     emit this->SerialRxData(m_Serial_Port_Settings.portName, Rx_Data, Rx_Num);
                 }
