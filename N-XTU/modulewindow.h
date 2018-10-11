@@ -54,11 +54,11 @@ private:
     QGroupBox    *GroupBox;
     QLabel       *Name[NumParaRow];
     QLabel       *Name_Text[NumParaRow];
-
     int          PaintFlag;
 
 public:
     QString      Text_Content[NumParaRow+1];
+    QString      Node_Type;
 
 
 };

@@ -1,8 +1,11 @@
 #include "mainwindow.h"
 
 extern bool     AT_Com_ReqType(ModuleDeal *module_deal, uint8_t *tx_buf, uint16_t &tx_num);
-extern void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+extern bool     AT_Com_ReadID(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+extern bool     AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 
+extern void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+extern void     AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,12 +22,16 @@ MainWindow::MainWindow(QWidget *parent)
     Creat_CentralWidget();
 
 
-    //创建串口发送定时器
-    Creat_SerialTxTimer();
+    //创建定时器
+    Creat_User_Timer();
 
 
     //设置窗体属性
     Set_WidgetAttributes();
+
+
+    //初始化参数
+    Init_Window_Para();
 }
 
 MainWindow::~MainWindow()
@@ -105,9 +112,13 @@ void MainWindow::Creat_CentralWidget()
     left_window->resize(330, 100);
     left_window->setMinimumWidth(250);
 
+
     //定义右窗体
     right_window = new RightWindow();
     right_window->setMinimumWidth(250);
+    connect(this, &MainWindow::Signal_ModuleStateChange_ToConsoleWin, right_window->Console_Window, &ConsoleWindow::Slot_ModuleStateChange_FromMainWin);
+    connect(right_window->Console_Window, &ConsoleWindow::Signal_StartStopTest_ToMainWin, this, &MainWindow::Slot_StartStopTest_FromConsoleWin);
+
 
     //定义分割器
     splitter = new QSplitter(Qt::Horizontal, this);
@@ -115,7 +126,7 @@ void MainWindow::Creat_CentralWidget()
     splitter->addWidget(right_window);
     splitter->setChildrenCollapsible(false);                                           //设置是否最小宽度高度限定
     splitter->setStretchFactor(1, 1);                                                  //设置拉伸:第一参数是 序号  ；第二个参数 大于1支持拉伸
-    splitter->setHandleWidth(4);                                                       //设置宽度
+    splitter->setHandleWidth(6);                                                       //设置宽度
     splitter->setStyleSheet("QSplitter::handle { background-color:rgb(215,215,215)}"); //设置颜色
     splitter->showMaximized();
 
@@ -128,12 +139,15 @@ void MainWindow::Creat_CentralWidget()
 
 
 /*创建串口发送定时器------------------------------------------------------------------------------------------------------------------*/
-void MainWindow::Creat_SerialTxTimer()
+void MainWindow::Creat_User_Timer()
 {
     SerialTx_Timer = new QTimer(this);
 
     connect(SerialTx_Timer, SIGNAL(timeout()), this, SLOT(Send_SerialMessage()));
     SerialTx_Timer->start(1);
+
+    Test_Run_Timer = new QTimer(this);
+    connect(Test_Run_Timer, SIGNAL(timeout()), this, SLOT(Slot_TestRunTimer()));
 }
 
 
@@ -146,10 +160,121 @@ void MainWindow::Set_WidgetAttributes()
 }
 
 
+/*初始化窗体参数--------------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Init_Window_Para()
+{
+    Test_Run_State = NullState;
+}
+
+
+
+
+/*打开串口对话框选中串口后并进行相应的处理 槽函数------------------------------------------------------------------------------------------*/
+void MainWindow::Open_SerialDialog()
+{
+    Serial_Dialog->SerivalDiscover();
+    if (Serial_Dialog->exec() == QDialog::Accepted)
+    {
+        Open_Serial_Deal();
+    }
+}
+
+
+/*串口数据接收相应处理 槽函数-----------------------------------------------------------------------------------*/
+void MainWindow::Receive_SerialMessage(const QString &portname, unsigned char *rx_data, unsigned short rx_num)
+{
+    auto module_deal = Module_Deal_Hash.value(portname);
+    Port_Receive_Deal(module_deal, rx_data, rx_num);
+}
+
+
+
+/*串口发送数据相应处理 槽函数-----------------------------------------------------------------------------------*/
+void MainWindow::Send_SerialMessage()
+{
+    auto module = Module_Deal_Hash.begin();
+    while(module != Module_Deal_Hash.end())
+    {
+        if (!Port_Send_Deal(module.value()))
+        {
+            break;
+        }
+        ++module;
+    }
+}
+
+
+/*删除模块对话框后进行相应处理 槽函数-----------------------------------------------------------------------------*/
+void MainWindow::Close_ModuleWindow(const QString &portname)
+{
+    emit this->Signal_ModuleStateChange_ToConsoleWin(false, Module_Deal_Hash.value(portname)->moduleWindow->Text_Content[3], Module_Deal_Hash.value(portname)->moduleWindow->Node_Type);
+
+    disconnect(Module_Deal_Hash.value(portname)->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Slot_CommunicationDisplay_FromMainWin);
+
+    Module_Deal_Hash.value(portname)->serialThread->SerialClose();
+
+    delete Module_Deal_Hash.value(portname)->serialThread;
+    delete Module_Deal_Hash.value(portname)->serialtxrxPara;
+
+    Module_Deal_Hash.remove(portname);
+}
+
+
+
+/*搜索窗口手动关闭进行相应处理 槽函数------------------------------------------------------------------------------*/
+void MainWindow::Close_SearchDialog(const QString &portname)
+{
+    if (Module_Deal_Hash.contains(portname))
+    {
+        Module_Deal_Hash.value(portname)->serialtxrxPara->search_total_flag = 0x01;
+    }
+}
+
+
+/*测试运行定时器 槽函数-----------------------------------------------------------------------------------------*/
+void MainWindow::Slot_TestRunTimer()
+{
+    qDebug()<< "Test_Run_Num" << QString::number(Test_Run_Num);
+    right_window->Console_Window->Set_RecordLabel(++Test_Run_Num);
+}
+
+
+
+/*射频测试处理 槽函数-------------------------------------------------------------------------------------------*/
+void MainWindow::Slot_StartStopTest_FromConsoleWin(const bool &state, const QString &dmport, const QString &dpport)
+{
+    if (state)
+    {
+        Test_Run_State = ReadNodeID;
+        Test_Run_Num   = 0;
+        Test_Run_Timer->start(100);
+
+        right_window->Console_Window->Set_StatusText(0, 1);
+
+        auto temp_serialtxrxPara = Module_Deal_Hash.value(dmport)->serialtxrxPara;
+        temp_serialtxrxPara->func_type          = MODULE_READ_ID_FUN;
+        temp_serialtxrxPara->frame_id           = 0x01;
+        temp_serialtxrxPara->tx_num             = MODULE_READ_ID_NUM;
+        temp_serialtxrxPara->tx_interval        = MODULE_TYPE_REQ_INTERVAL;
+        temp_serialtxrxPara->tx_count           = 0x00;
+        temp_serialtxrxPara->search_count       = 0x00;
+        temp_serialtxrxPara->search_total_count = MODULE_TYPE_REQ_NUM;
+        temp_serialtxrxPara->search_total_flag  = 0x00;
+    }
+    else
+    {
+        Test_Run_State = NullState;
+        Test_Run_Num = 0;
+        right_window->Console_Window->Set_RecordLabel(Test_Run_Num);
+        Test_Run_Timer->stop();
+    }
+}
+
+
 
 
 /*串口模块添处理--------------------------------------------------------------------------------------------------------------------*/
-void MainWindow::Add_ModuleWindow_Deal()
+void MainWindow::Open_Serial_Deal()
 {
     //判断hash表中是否已经存该串口
     if(!Module_Deal_Hash.contains(Serial_Dialog->Serial_Port_Settings.portName))
@@ -193,11 +318,11 @@ void MainWindow::Add_ModuleWindow_Deal()
 
 
         //插入到hash中
-        Module_Deal_Hash.insert(Serial_Dialog->Serial_Port_Settings.portName, Module_Deal);
+        Module_Deal_Hash.insertMulti(Serial_Dialog->Serial_Port_Settings.portName, Module_Deal);
 
 
         //关联通讯显示消息和槽函数
-        connect(Module_Deal->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
+        connect(Module_Deal->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Slot_CommunicationDisplay_FromMainWin);
     }
 
 
@@ -205,7 +330,7 @@ void MainWindow::Add_ModuleWindow_Deal()
     if (!Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread->SerialOpen(Serial_Dialog->Serial_Port_Settings))
     {
         //打开串口失败，从Qhash中删除
-        disconnect(Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
+        disconnect(Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Slot_CommunicationDisplay_FromMainWin);
         delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->moduleWindow;
         delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialThread;
         delete Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialtxrxPara;
@@ -244,6 +369,10 @@ void MainWindow::Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uin
     {
         case MODULE_TYPE_REQ_FUN:
             AT_Com_RspType(module_deal, rx_buf, rx_num);
+        break;
+
+        case MODULE_READ_ID_FUN:
+            AT_Com_RspID(module_deal, rx_buf, rx_num);
         break;
 
         default:
@@ -287,6 +416,7 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         module_deal->moduleWindow->ModuleInfo_Set();
 
                         //添加module window模块
+                        emit this->Signal_ModuleStateChange_ToConsoleWin(true, module_deal->moduleWindow->Text_Content[3], module_deal->moduleWindow->Node_Type);
                         left_window->Add_SubWidget(Module_Deal_Hash);
                     }
                     else
@@ -315,7 +445,7 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         }
 
                         //等待应答超时，关闭串口从Qhash中删除
-                        disconnect(module_deal->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
+                        disconnect(module_deal->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Slot_CommunicationDisplay_FromMainWin);
                         module_deal->serialThread->SerialClose();
                         delete module_deal->moduleWindow;
                         delete module_deal->serialThread;
@@ -330,6 +460,68 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                 break;
             }
 
+            //模块ID读取
+            case MODULE_READ_ID_FUN:
+            {
+                if (module_deal->serialtxrxPara->tx_count == 0)
+                {
+                    if (module_deal->serialtxrxPara->tx_num == 0)
+                    {
+                        right_window->Console_Window->Set_NamePix(0, 1);
+                        right_window->Console_Window->NameText[0]->setText(module_deal->moduleWindow->Text_Content[4]);
+
+                        Test_Run_State = RfTransmit;
+                        right_window->Console_Window->Set_StatusText(1, 1);
+
+                        module_deal->serialtxrxPara->func_type          = MODULE_RF_TX_FUN;
+                        module_deal->serialtxrxPara->frame_id           = module_deal->serialtxrxPara->frame_id;
+                        module_deal->serialtxrxPara->tx_num             = MODULE_RF_TX_NUM;
+                        module_deal->serialtxrxPara->tx_interval        = MODULE_TYPE_REQ_INTERVAL;
+                        module_deal->serialtxrxPara->tx_count           = 0x00;
+                        module_deal->serialtxrxPara->search_count       = 0x00;
+                        module_deal->serialtxrxPara->search_total_count = MODULE_TYPE_REQ_NUM;
+                        module_deal->serialtxrxPara->search_total_flag  = 0x00;
+                    }
+                    else
+                    {
+                        //发送请求命令
+                        AT_Com_ReadID(module_deal, tx_buf, tx_num);
+                        module_deal->serialThread->SerialTxData(tx_buf, tx_num);
+                    }
+                }
+                else
+                {
+                    if ((module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval)
+                         || (module_deal->serialtxrxPara->search_total_flag == 0x01))
+                    {
+                        if (module_deal->serialtxrxPara->search_total_flag == 0x00)
+                        {
+                            //告警提示
+                            QMessageBox::critical(NULL, "Error discovering device",
+                                                  module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
+                        }
+
+                        module_deal->serialtxrxPara->func_type          = MODULE_REQ_NULL;
+                        module_deal->serialtxrxPara->tx_num             = 0x00;
+                        module_deal->serialtxrxPara->tx_interval        = 0x00;
+                        module_deal->serialtxrxPara->tx_count           = 0x00;
+                        module_deal->serialtxrxPara->search_count       = 0x00;
+                        module_deal->serialtxrxPara->search_total_count = 0x01;
+                        module_deal->serialtxrxPara->search_total_flag  = 0x00;
+
+                        return false;
+                    }
+                }
+                module_deal->serialtxrxPara->tx_count++;
+                break;
+            }
+
+            case MODULE_RF_TX_FUN:
+            {
+
+                break;
+            }
+
 
 
             default:
@@ -339,93 +531,6 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
     return true;
 }
-
-
-
-
-
-
-
-
-/*打开串口对话框选中串口后并进行相应的处理 槽函数------------------------------------------------------------------------------------------*/
-void MainWindow::Open_SerialDialog()
-{
-    Serial_Dialog->SerivalDiscover();
-    if (Serial_Dialog->exec() == QDialog::Accepted)
-    {
-        Add_ModuleWindow_Deal();
-    }
-}
-
-
-/*串口数据接收相应处理 槽函数-----------------------------------------------------------------------------------*/
-void MainWindow::Receive_SerialMessage(const QString &portname, unsigned char *rx_data, unsigned short rx_num)
-{
-    auto module_deal = Module_Deal_Hash.value(portname);
-    Port_Receive_Deal(module_deal, rx_data, rx_num);
-}
-
-
-
-/*串口发送数据相应处理 槽函数-----------------------------------------------------------------------------------*/
-void MainWindow::Send_SerialMessage()
-{
-    auto module = Module_Deal_Hash.begin();
-    while(module != Module_Deal_Hash.end())
-    {
-        if (!Port_Send_Deal(module.value()))
-        {
-            break;
-        }
-        ++module;
-    }
-}
-
-
-/*删除模块对话框后进行相应处理 槽函数-----------------------------------------------------------------------------*/
-void MainWindow::Close_ModuleWindow(const QString &portname)
-{
-    disconnect(Module_Deal_Hash.value(portname)->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Communication_Display);
-
-    Module_Deal_Hash.value(portname)->serialThread->SerialClose();
-
-    delete Module_Deal_Hash.value(portname)->serialThread;
-    delete Module_Deal_Hash.value(portname)->serialtxrxPara;
-
-    Module_Deal_Hash.remove(portname);
-}
-
-
-
-/*搜索窗口手动关闭进行相应处理 槽函数------------------------------------------------------------------------------*/
-void MainWindow::Close_SearchDialog(const QString &portname)
-{
-    if (Module_Deal_Hash.contains(portname))
-    {
-        Module_Deal_Hash.value(portname)->serialtxrxPara->search_total_flag = 0x01;
-    }
-}
-
-
-
-/*射频测试处理 槽函数-------------------------------------------------------------------------------------------*/
-void MainWindow::Radio_Test_Deal(const bool &state)
-{
-    if (state)
-    {
-        //开始测试
-
-    }
-    else
-    {
-        //停止测试
-    }
-}
-
-
-
-
-
 
 
 

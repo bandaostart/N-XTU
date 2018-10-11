@@ -17,8 +17,6 @@ ModuleWindow::ModuleWindow(QVector<QString> &text, QWidget *parent) :
 
 ModuleWindow::~ModuleWindow()
 {
-
-    qDebug() << "ModuleWindow exit";
 }
 
 

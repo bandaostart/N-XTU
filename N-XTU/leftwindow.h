@@ -17,7 +17,7 @@ struct SerialTxRxPara
 {
     unsigned char func_type;
     unsigned char frame_id;
-    unsigned char tx_num;
+    unsigned int  tx_num;
     unsigned int  tx_interval;
     unsigned int  tx_count;
     unsigned int  search_count;

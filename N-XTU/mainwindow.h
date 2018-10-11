@@ -29,6 +29,9 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void Signal_ModuleStateChange_ToConsoleWin(bool add_delete, QString portname, QString noidtype);
+
 private:
     QToolBar       *Tool_Bar;
     QMenuBar       *Menu_Bar;
@@ -43,10 +46,11 @@ private:
     QHash<QString, ModuleDeal *>   Module_Deal_Hash;
 
     QTimer         *SerialTx_Timer;
+    QTimer         *Test_Run_Timer;
 
-    enum {ReadNodeID = 0, RfTransmit, RfReceive, CurrentTransmit, CurrentReceive, CurrentSleep, CrystalOsc};
-    unsigned char  *Test_Run_State;
-
+    enum {NullState = 0, ReadNodeID, RfTransmit, RfReceive, CurrentTransmit, CurrentReceive, CurrentSleep, CrystalOsc};
+    unsigned char  Test_Run_State;
+    unsigned int   Test_Run_Num;
 
 
 private:
@@ -56,10 +60,10 @@ private:
     void Creat_MenuBar();
     void Creat_ToolBar();
     void Creat_CentralWidget();
-    void Creat_SerialTxTimer();
+    void Creat_User_Timer();
     void Set_WidgetAttributes();
-
-    void Add_ModuleWindow_Deal();
+    void Init_Window_Para();
+    void Open_Serial_Deal();
 
     bool Port_Send_Deal(ModuleDeal *module_deal);
     void Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
@@ -71,8 +75,9 @@ private slots:
     void Receive_SerialMessage(const QString &portname,  unsigned char *rx_data,  unsigned short rx_num);
     void Send_SerialMessage();
     void Close_SearchDialog(const QString &portname);
+    void Slot_TestRunTimer();
 
-    void Radio_Test_Deal(const bool &state);
+    void Slot_StartStopTest_FromConsoleWin(const bool &state, const QString &dmport, const QString &dpport);
 
     void Application_Exit();
 

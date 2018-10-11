@@ -12,6 +12,7 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QPainter>
+#include <QDebug>
 
 
 class ConsoleWindow : public QWidget
@@ -26,12 +27,19 @@ private:
     void paintEvent(QPaintEvent *event) override;
 
 signals:
-    void Signal_Testing_State(const bool &state);
+    void Signal_StartStopTest_ToMainWin(const bool &state, const QString &dmport, const QString &dpport);
 
 public slots:
-    void Start_RfTesting();
-    void Communication_Display(const QString &str);
-    void Record_MenuText(QPoint);
+    void Slot_ModuleStateChange_FromMainWin(bool add_delete, QString portname, QString noidtype);
+
+    void Slot_StartStopTest_FromStartAction();
+    void Slot_CommunicationDisplay_FromMainWin(const QString &str);
+    void Slot_RecordMenuText_FromRecordText(QPoint);
+
+public:
+    void Set_StatusText(int count, int state);
+    void Set_NamePix(int count, int state);
+    void Set_RecordLabel(int count);
 
 private:
     void Creat_TopToolBar();
@@ -44,8 +52,12 @@ private:
 
 
 
-private:
+
+
+public:
     enum {NumTestRow = 8};
+
+    QFont font;
 
     QToolBar    *Top_Tool_Bar;
     QAction     *Start_Action;
@@ -59,16 +71,18 @@ private:
     QAction     *Connect_Action;
 
     QGroupBox   *Top_Group_Box;
+    QPixmap     NamePix_Pixmap[3];
+    QString     StatusText_Str[4];
     QLabel      *NameLabel[NumTestRow];
     QLineEdit   *NameText[NumTestRow];
     QLabel      *NamePix[NumTestRow];
-    QLabel      *StatusText;
-    QLabel      *StatusPix;
+    QLabel      *StatusText[NumTestRow];
     QGridLayout *Top_Box_Layout;
 
     QGroupBox   *Bottom_Group_Box;
 
     QGroupBox   *Right_Group_Box;
+    QPixmap      Pixmap[11];
     QLabel      *Record_Label;
     QMenu       *Record_Menu;
     QAction     *Record_Clear;
@@ -78,7 +92,11 @@ private:
 
     QGridLayout *Grid_Layout;
 
+    QString      DM_Port;
+    QString      DP_Port;
     bool         Testing_State;
+    bool         DM_State;
+    bool         DP_State;
 
 };
 

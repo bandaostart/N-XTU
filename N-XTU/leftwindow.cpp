@@ -92,13 +92,28 @@ void LeftWindow::Add_SubWidget(QHash<QString, ModuleDeal *> &moduleDealMap)
     auto module = moduleDealMap.begin();
     while(module != moduleDealMap.end())
     {
-        Vbox_Layout->addWidget(module.value()->moduleWindow);
+        if (module.value()->moduleWindow->Node_Type == "DM")
+        {
+            Vbox_Layout->addWidget(module.value()->moduleWindow);
+        }
         ++module;
     }
+
+    module = moduleDealMap.begin();
+    while(module != moduleDealMap.end())
+    {
+        if (module.value()->moduleWindow->Node_Type == "DP")
+        {
+            Vbox_Layout->addWidget(module.value()->moduleWindow);
+        }
+        ++module;
+    }
+
 
     verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
     Vbox_Layout->addItem(verticalSpacer);
 }
+
 
 
 

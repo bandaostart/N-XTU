@@ -49,7 +49,7 @@ void ConsoleWindow::Creat_TopToolBar()
     Top_Tool_Bar->addAction(Record_Action);
 
 
-    connect(Start_Action, &QAction::triggered, this, &ConsoleWindow::Start_RfTesting);
+    connect(Start_Action, &QAction::triggered, this, &ConsoleWindow::Slot_StartStopTest_FromStartAction);
 }
 
 
@@ -86,14 +86,14 @@ void ConsoleWindow::Creat_LeftToolBar()
 /*创建主显示区域----------------------------------------------------------------------------*/
 void ConsoleWindow::Creat_MasterDisAre()
 {
-    QFont font;
     font.setBold(true);
     font.setFamily(QString::fromUtf8("Arial"));
     font.setWeight(80);
 
     Top_Group_Box    = new QGroupBox(this);
     //Top_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
-    Top_Group_Box->setTitle("COM10");
+    Top_Group_Box->setFont(font);
+    Top_Group_Box->setTitle("COM?");
 
     for (int i=0; i<NumTestRow; i++)
     {
@@ -119,37 +119,55 @@ void ConsoleWindow::Creat_MasterDisAre()
         NameText[i]->setGeometry(160, i*30+5, 250, 25);
         NameText[i]->setAlignment(Qt::AlignLeft);
     }
-    NameText[0]->setText("Noid ID:");
-    NameText[1]->setText("Transmitting Test:");
-    NameText[2]->setText("Receiving Test:");
-    NameText[3]->setText("Transmitting Current:");
-    NameText[4]->setText("Receiving Current:");
-    NameText[5]->setText("Sleeping Current:");
-    NameText[6]->setText("GPIO:");
-    NameText[7]->setText("Crystal Oscillator:");
+    NameText[0]->setText("");
+    NameText[1]->setText("");
+    NameText[2]->setText("");
+    NameText[3]->setText("");
+    NameText[4]->setText("");
+    NameText[5]->setText("");
+    NameText[6]->setText("");
+    NameText[7]->setText("");
 
+    NamePix_Pixmap[0].load(":/image/blue_arrow.png");
+    NamePix_Pixmap[1].load(":/image/ok.png");
+    NamePix_Pixmap[2].load(":/image/error.png");
     for (int i=0; i<NumTestRow; i++)
     {
         NamePix[i] = new QLabel(Top_Group_Box);
         NamePix[i]->setAlignment(Qt::AlignVCenter);
         NamePix[i]->setGeometry(420, i*30+5, 25, 25);
-        NamePix[i]->setPixmap(QPixmap(":/image/blue_arrow.png"));
+        NamePix[i]->setPixmap(NamePix_Pixmap[0]);
     }
+
 
     font.setWeight(80);
     font.setPointSize(14);
-    StatusText = new QLabel(Top_Group_Box);
-    StatusText->setMinimumWidth(120);
-    StatusText->setAlignment(Qt::AlignCenter);
-    StatusText->setStyleSheet("color:Green;");
-    StatusText->setFont(font);
-    StatusText->setText("SUCCESS");
-    StatusText->setGeometry(500, 5, 120, 25);
+    StatusText_Str[0] = "WAITING";
+    StatusText_Str[1] = "RUNNING";
+    StatusText_Str[2] = "SUCCESS";
+    StatusText_Str[3] = "FAIL";
+    for(int i=0; i<NumTestRow; i++)
+    {
+        StatusText[i] = new QLabel(Top_Group_Box);
+        StatusText[i]->setMinimumWidth(120);
+        StatusText[i]->setAlignment(Qt::AlignCenter);
+        StatusText[i]->setStyleSheet("color:Green;");
+        StatusText[i]->setFont(font);
+        StatusText[i]->setText(StatusText_Str[0]);
+        StatusText[i]->setGeometry(500, i*30+5, 120, 25);
 
-    StatusPix  = new QLabel(Top_Group_Box);
-    StatusPix->setAlignment(Qt::AlignCenter);
-//    StatusPix->setPixmap(QPixmap(":/image/face-smile.png"));
-    StatusPix->setGeometry(500, 55, 120, 75);
+        if (i == 0)
+        {
+            StatusText[i]->show();
+        }
+        else
+        {
+            StatusText[i]->hide();
+        }
+    }
+
+
+
 
     Top_Box_Layout = new QGridLayout(Top_Group_Box);
     for (int i=0; i<NumTestRow; i++)
@@ -157,18 +175,25 @@ void ConsoleWindow::Creat_MasterDisAre()
         Top_Box_Layout->addWidget(NameLabel[i], i, 0, 1, 1);
         Top_Box_Layout->addWidget(NameText[i],  i, 1, 1, 1);
         Top_Box_Layout->addWidget(NamePix[i],  i, 2, 1, 1);
+        Top_Box_Layout->addWidget(StatusText[i], i, 3, 1, 1);
     }
-    Top_Box_Layout->addWidget(StatusText, 0, 3, 1, 1);
-    Top_Box_Layout->addWidget(StatusPix, 1, 3, 3, 1);
+
 }
 
 
 /*创建从显示区域-----------------------------------------------------------------------------*/
 void ConsoleWindow::Creat_SlaveDisAre()
 {
+    font.setBold(true);
+    font.setFamily(QString::fromUtf8("Arial"));
+    font.setWeight(80);
+    font.setPointSize(9);
+
     Bottom_Group_Box = new QGroupBox(this);
     //Bottom_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
-    Bottom_Group_Box->setTitle("COM10");
+    Bottom_Group_Box->setFont(font);
+
+    Bottom_Group_Box->setTitle("COM?");
 }
 
 
@@ -176,15 +201,28 @@ void ConsoleWindow::Creat_SlaveDisAre()
 /*创建记录区域------------------------------------------------------------------------------*/
 void ConsoleWindow::Creat_RecordDisAre()
 {
+    Pixmap[0].load(":/image/xbee_loading1.png");
+    Pixmap[1].load(":/image/xbee_loading2.png");
+    Pixmap[2].load(":/image/xbee_loading3.png");
+    Pixmap[3].load(":/image/xbee_loading4.png");
+    Pixmap[4].load(":/image/xbee_loading5.png");
+    Pixmap[5].load(":/image/xbee_loading6.png");
+    Pixmap[6].load(":/image/xbee_loading7.png");
+    Pixmap[7].load(":/image/xbee_loading8.png");
+    Pixmap[8].load(":/image/xbee_loading9.png");
+    Pixmap[9].load(":/image/xbee_loading10.png");
+    Pixmap[10].load(":/image/xbee_loading10.png");
+
+
     Right_Group_Box   = new QGroupBox(this);
-    Right_Group_Box->setMinimumWidth(330);
-    Right_Group_Box->setMaximumWidth(330);
+    Right_Group_Box->setMinimumWidth(350);
+    Right_Group_Box->setMaximumWidth(350);
     Right_Group_Box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     Right_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
 
 
     Record_Label =  new QLabel(Right_Group_Box);
-    Record_Label->setPixmap(QPixmap(":/image/xbee_loading1.png"));
+    Record_Label->setPixmap(Pixmap[0]);
     Record_Label->setGeometry(0, 0, 64, 64);
 
 
@@ -201,7 +239,7 @@ void ConsoleWindow::Creat_RecordDisAre()
     Record_Menu->addAction(Record_Clear);
     Record_Menu->addAction(Record_SelectAll);
 
-    connect(Record_Text, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Record_MenuText(QPoint)));
+    connect(Record_Text, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Slot_RecordMenuText_FromRecordText(QPoint)));
 
 
     Right_Box_Layout =  new QVBoxLayout(Right_Group_Box);
@@ -226,7 +264,45 @@ void ConsoleWindow::Creat_Layout()
 void ConsoleWindow::Init_Para()
 {
     Testing_State = false;
+
+    DM_State = false;
+    DP_State = false;
 }
+
+
+/*设置Status Text---------------------------------------------------------------------*/
+void ConsoleWindow::Set_StatusText(int count, int state)
+{
+    for (int i=0; i<NumTestRow; i++)
+    {
+        if (i == count)
+        {
+            StatusText[i]->show();
+            StatusText[i]->setText(StatusText_Str[state]);
+        }
+        else
+        {
+            StatusText[i]->hide();
+        }
+    }
+}
+
+
+
+/*设置Name Pixmap---------------------------------------------------------------------*/
+void ConsoleWindow::Set_NamePix(int count, int state)
+{
+    NamePix[count]->setPixmap(NamePix_Pixmap[state%3]);
+}
+
+
+
+/*设置Record_Label--------------------------------------------------------------------*/
+void ConsoleWindow::Set_RecordLabel(int count)
+{
+    Record_Label->setPixmap(Pixmap[count%11]);
+}
+
 
 
 
@@ -236,27 +312,44 @@ void ConsoleWindow::Init_Para()
 
 
 /*开启测试 槽函数------------------------------------------------------------------------*/
-void ConsoleWindow::Start_RfTesting()
+void ConsoleWindow::Slot_StartStopTest_FromStartAction()
 {
     if (Testing_State)
     {
         Testing_State = false;
         Start_Action->setIcon(QIcon(":/image/network_start.png"));
-        Connect_Action->setIcon(QIcon(":/image/connect.png"));
     }
     else
     {
+        for (int i=0; i<NumTestRow; i++)
+        {
+            NameText[i]->setText("");
+            NamePix[i]->setPixmap(NamePix_Pixmap[0]);
+
+            if (i == 0)
+            {
+                StatusText[i]->show();
+                StatusText[i]->setText(StatusText_Str[0]);
+            }
+            else
+            {
+                StatusText[i]->hide();
+            }
+        }
+
+
+
         Testing_State = true;
         Start_Action->setIcon(QIcon(":/image/network_stop.png"));
-        Connect_Action->setIcon(QIcon(":/image/disconnect.png"));
     }
-    emit this->Signal_Testing_State(Testing_State);
+
+    emit this->Signal_StartStopTest_ToMainWin(Testing_State, DM_Port, DP_Port);
 }
 
 
 
 /*通讯显示 槽函数----------------------------------------------------------------------*/
-void ConsoleWindow::Communication_Display(const QString &str)
+void ConsoleWindow::Slot_CommunicationDisplay_FromMainWin(const QString &str)
 {
     Record_Text->insertPlainText(str);
     Record_Text->insertPlainText("\n\n");
@@ -266,7 +359,7 @@ void ConsoleWindow::Communication_Display(const QString &str)
 
 
 /*TextEdit鼠标右键重写 槽函数----------------------------------------------------------*/
-void ConsoleWindow::Record_MenuText(QPoint)
+void ConsoleWindow::Slot_RecordMenuText_FromRecordText(QPoint)
 {
     Record_Menu->move (cursor().pos());
     Record_Menu->show();
@@ -274,6 +367,54 @@ void ConsoleWindow::Record_MenuText(QPoint)
 
 
 
+/*Module State Change 槽函数--------------------------------------------------------*/
+void ConsoleWindow::Slot_ModuleStateChange_FromMainWin(bool add_delete, QString portname, QString noidtype)
+{
+    if (add_delete)
+    {
+        if (noidtype == "DM")
+        {
+            Top_Group_Box->setTitle(portname);
+            DM_Port  = portname;
+            DM_State = true;
+        }
+        else
+        {
+            Bottom_Group_Box->setTitle(portname);
+            DP_Port = portname;
+            DP_State = true;
+        }
+
+        if (DM_State && DP_State)
+        {
+            Connect_Action->setIcon(QIcon(":/image/disconnect.png"));
+        }
+    }
+    else
+    {
+        if (noidtype == "DM")
+        {
+            Top_Group_Box->setTitle("COM?");
+            DM_Port  = "COM?";
+            DM_State = false;
+        }
+        else
+        {
+            Bottom_Group_Box->setTitle("COM?");
+            DP_Port  = "COM?";
+            DP_State = false;
+        }
+
+        if (DM_State && DP_State)
+        {
+
+        }
+        else
+        {
+            Connect_Action->setIcon(QIcon(":/image/connect.png"));
+        }
+    }
+}
 
 
 

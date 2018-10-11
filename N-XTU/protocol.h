@@ -525,11 +525,13 @@ typedef struct
 /*用户变量定义---------------------------------------------------------------------------------*/
 #define MODULE_REQ_NULL                   0xFF                                    //无命令发送
 #define MODULE_TYPE_REQ_FUN               0x01                                    //设备信息类型请求
-#define MODULE_RADIO_TEST_FUN             0x02                                    //射频参数测试
-
-
+#define MODULE_READ_ID_FUN                0x02                                    //读取ID
+#define MODULE_RF_TX_FUN                  0x03                                    //发送测试
 
 #define MODULE_TYPE_REQ_NUM               5
+#define MODULE_READ_ID_NUM                2
+#define MODULE_RF_TX_NUM                  1000
+
 #define MODULE_TYPE_REQ_INTERVAL          3000
 
 
