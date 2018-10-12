@@ -533,6 +533,7 @@ typedef struct
 #define MODULE_RF_TX_NUM                  1000
 
 #define MODULE_TYPE_REQ_INTERVAL          3000
+#define MODULE_RF_TX_INTERVAL             100
 
 
 

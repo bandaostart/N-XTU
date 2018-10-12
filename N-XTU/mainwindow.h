@@ -52,6 +52,9 @@ private:
     unsigned char  Test_Run_State;
     unsigned int   Test_Run_Num;
 
+    QString        DM_PortName;
+    QString        DP_PortName;
+
 
 private:
     void paintEvent(QPaintEvent *event) override;

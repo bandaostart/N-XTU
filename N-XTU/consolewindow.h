@@ -33,6 +33,7 @@ public slots:
     void Slot_ModuleStateChange_FromMainWin(bool add_delete, QString portname, QString noidtype);
 
     void Slot_StartStopTest_FromStartAction();
+    void Slot_RefreshText_FromRefreshAction();
     void Slot_CommunicationDisplay_FromMainWin(const QString &str);
     void Slot_RecordMenuText_FromRecordText(QPoint);
 
@@ -40,6 +41,7 @@ public:
     void Set_StatusText(int count, int state);
     void Set_NamePix(int count, int state);
     void Set_RecordLabel(int count);
+    void Set_NamePixFlicker(int count, int state);
 
 private:
     void Creat_TopToolBar();
@@ -62,6 +64,7 @@ public:
     QToolBar    *Top_Tool_Bar;
     QAction     *Start_Action;
     QAction     *Record_Action;
+    QAction     *Refresh_Action;
 
     QToolBar    *Left_Tool_Bar;
     QWidget     *Space[4];

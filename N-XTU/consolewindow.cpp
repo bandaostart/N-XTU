@@ -45,11 +45,14 @@ void ConsoleWindow::Creat_TopToolBar()
 
     Start_Action   = new QAction(QIcon(":/image/network_start.png"), tr("Start radio test"), this);
     Record_Action  = new QAction(QIcon(":/image/console_record_start.png"), tr("Start recording the console session"), this);
+    Refresh_Action = new QAction(QIcon(":/image/read_settings.png"), tr("Refresh Test Text"), this);
     Top_Tool_Bar->addAction(Start_Action);
     Top_Tool_Bar->addAction(Record_Action);
+    Top_Tool_Bar->addAction(Refresh_Action);
 
 
     connect(Start_Action, &QAction::triggered, this, &ConsoleWindow::Slot_StartStopTest_FromStartAction);
+    connect(Refresh_Action, &QAction::triggered, this, &ConsoleWindow::Slot_RefreshText_FromRefreshAction);
 }
 
 
@@ -297,6 +300,20 @@ void ConsoleWindow::Set_NamePix(int count, int state)
 
 
 
+/*设置Name Pixmap闪烁------------------------------------------------------------------*/
+void ConsoleWindow::Set_NamePixFlicker(int count, int state)
+{
+   if (state)
+   {
+        NamePix[count]->show();
+   }
+   else
+   {
+       NamePix[count]->hide();
+   }
+}
+
+
 /*设置Record_Label--------------------------------------------------------------------*/
 void ConsoleWindow::Set_RecordLabel(int count)
 {
@@ -344,6 +361,28 @@ void ConsoleWindow::Slot_StartStopTest_FromStartAction()
     }
 
     emit this->Signal_StartStopTest_ToMainWin(Testing_State, DM_Port, DP_Port);
+}
+
+
+
+/*复位清空测试列表 槽函数---------------------------------------------------------------*/
+void ConsoleWindow::Slot_RefreshText_FromRefreshAction()
+{
+    for (int i=0; i<NumTestRow; i++)
+    {
+        NameText[i]->setText("");
+        NamePix[i]->setPixmap(NamePix_Pixmap[0]);
+
+        if (i == 0)
+        {
+            StatusText[i]->show();
+            StatusText[i]->setText(StatusText_Str[0]);
+        }
+        else
+        {
+            StatusText[i]->hide();
+        }
+    }
 }
 
 

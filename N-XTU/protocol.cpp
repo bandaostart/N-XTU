@@ -145,11 +145,20 @@ bool AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
 void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 {
     uint16_t            AT_Command = 0;
-    uint16_t            AT_Length  = 0;
+    uint16_t            AT_Length  = 0, length = 0;
     XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
 
     auto                module = module_deal->moduleWindow;
     QString             temp_str;
+
+
+     pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+     length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+     if ((rx_buf[0] != 0x7E) || (length >= 255))
+     {
+        return;
+     }
 
 
     pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
@@ -259,12 +268,20 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 {
     uint16_t            AT_Command = 0;
-    uint16_t            AT_Length  = 0;
+    uint16_t            AT_Length  = 0, length = 0;
     XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
 
     auto                module = module_deal->moduleWindow;
     QString             temp_str;
 
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return;
+    }
 
     pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
     AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;

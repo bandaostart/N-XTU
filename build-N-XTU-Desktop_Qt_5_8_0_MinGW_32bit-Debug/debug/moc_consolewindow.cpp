@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_ConsoleWindow_t {
-    QByteArrayData data[14];
-    char stringdata0[242];
+    QByteArrayData data[15];
+    char stringdata0[277];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -42,9 +42,10 @@ QT_MOC_LITERAL(7, 101, 10), // "add_delete"
 QT_MOC_LITERAL(8, 112, 8), // "portname"
 QT_MOC_LITERAL(9, 121, 8), // "noidtype"
 QT_MOC_LITERAL(10, 130, 34), // "Slot_StartStopTest_FromStartA..."
-QT_MOC_LITERAL(11, 165, 37), // "Slot_CommunicationDisplay_Fro..."
-QT_MOC_LITERAL(12, 203, 3), // "str"
-QT_MOC_LITERAL(13, 207, 34) // "Slot_RecordMenuText_FromRecor..."
+QT_MOC_LITERAL(11, 165, 34), // "Slot_RefreshText_FromRefreshA..."
+QT_MOC_LITERAL(12, 200, 37), // "Slot_CommunicationDisplay_Fro..."
+QT_MOC_LITERAL(13, 238, 3), // "str"
+QT_MOC_LITERAL(14, 242, 34) // "Slot_RecordMenuText_FromRecor..."
 
     },
     "ConsoleWindow\0Signal_StartStopTest_ToMainWin\0"
@@ -52,6 +53,7 @@ QT_MOC_LITERAL(13, 207, 34) // "Slot_RecordMenuText_FromRecor..."
     "Slot_ModuleStateChange_FromMainWin\0"
     "add_delete\0portname\0noidtype\0"
     "Slot_StartStopTest_FromStartAction\0"
+    "Slot_RefreshText_FromRefreshAction\0"
     "Slot_CommunicationDisplay_FromMainWin\0"
     "str\0Slot_RecordMenuText_FromRecordText"
 };
@@ -63,7 +65,7 @@ static const uint qt_meta_data_ConsoleWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       5,   14, // methods
+       6,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -71,13 +73,14 @@ static const uint qt_meta_data_ConsoleWindow[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    3,   39,    2, 0x06 /* Public */,
+       1,    3,   44,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       6,    3,   46,    2, 0x0a /* Public */,
-      10,    0,   53,    2, 0x0a /* Public */,
-      11,    1,   54,    2, 0x0a /* Public */,
-      13,    1,   57,    2, 0x0a /* Public */,
+       6,    3,   51,    2, 0x0a /* Public */,
+      10,    0,   58,    2, 0x0a /* Public */,
+      11,    0,   59,    2, 0x0a /* Public */,
+      12,    1,   60,    2, 0x0a /* Public */,
+      14,    1,   63,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::Bool, QMetaType::QString, QMetaType::QString,    3,    4,    5,
@@ -85,7 +88,8 @@ static const uint qt_meta_data_ConsoleWindow[] = {
  // slots: parameters
     QMetaType::Void, QMetaType::Bool, QMetaType::QString, QMetaType::QString,    7,    8,    9,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,   12,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::QString,   13,
     QMetaType::Void, QMetaType::QPoint,    2,
 
        0        // eod
@@ -100,8 +104,9 @@ void ConsoleWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
         case 0: _t->Signal_StartStopTest_ToMainWin((*reinterpret_cast< const bool(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
         case 1: _t->Slot_ModuleStateChange_FromMainWin((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3]))); break;
         case 2: _t->Slot_StartStopTest_FromStartAction(); break;
-        case 3: _t->Slot_CommunicationDisplay_FromMainWin((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 4: _t->Slot_RecordMenuText_FromRecordText((*reinterpret_cast< QPoint(*)>(_a[1]))); break;
+        case 3: _t->Slot_RefreshText_FromRefreshAction(); break;
+        case 4: _t->Slot_CommunicationDisplay_FromMainWin((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 5: _t->Slot_RecordMenuText_FromRecordText((*reinterpret_cast< QPoint(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -142,13 +147,13 @@ int ConsoleWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 6)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 6;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 5)
+        if (_id < 6)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 5;
+        _id -= 6;
     }
     return _id;
 }
