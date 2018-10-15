@@ -233,7 +233,7 @@ void ConsoleWindow::Creat_RecordDisAre()
     Record_Text->setGeometry(5, 64, 100, 100);
     Record_Text->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    Record_Clear = new QAction(QIcon(":/image/delete.png"), tr("Clear Text"), this);
+    Record_Clear = new QAction(QIcon(":/image/delete.png"), tr("Clear All"), this);
     connect(Record_Clear, &QAction::triggered, Record_Text, &QTextEdit::clear);
     Record_SelectAll = new QAction(QIcon(":/image/micropython_console.png"), tr("Select All"), this);
     connect(Record_SelectAll, &QAction::triggered, Record_Text, &QTextEdit::selectAll);

@@ -32,6 +32,7 @@ bool     AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num
 
 void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 void     AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+bool     AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, int8_t &rssi);
 
 
 
@@ -144,6 +145,7 @@ bool AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
 
 void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 {
+    uint8_t             sum=0;
     uint16_t            AT_Command = 0;
     uint16_t            AT_Length  = 0, length = 0;
     XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
@@ -158,6 +160,12 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
      if ((rx_buf[0] != 0x7E) || (length >= 255))
      {
         return;
+     }
+
+     sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+     if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+     {
+         return;
      }
 
 
@@ -267,6 +275,7 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 
 void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 {
+    uint8_t             sum = 0;
     uint16_t            AT_Command = 0;
     uint16_t            AT_Length  = 0, length = 0;
     XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
@@ -281,6 +290,12 @@ void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
     if ((rx_buf[0] != 0x7E) || (length >= 255))
     {
        return;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return;
     }
 
     pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
@@ -330,6 +345,42 @@ void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 
 
 
+bool AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, int8_t &rssi)
+{
+    uint8_t             sum = 0;
+    uint16_t            AT_Command = 0;
+    uint16_t            AT_Length  = 0, length = 0;
+    XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return false;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return false;
+    }
+
+    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+    switch(AT_Command)
+    {
+        case RT:                                                 //源64位地址高
+        {
+            rssi = (int8_t)rx_buf[XbeeApi_ATCom_Rsp_len];
+            break;
+        }
+    }
+
+    return true;
+}
 
 
 

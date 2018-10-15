@@ -54,6 +54,10 @@ private:
 
     QString        DM_PortName;
     QString        DP_PortName;
+    int            Rf_Tx_Count;
+    int            Rf_Rx_Count;
+    int8_t         Rssi;
+    int            Rssi_Sum;
 
 
 private:
