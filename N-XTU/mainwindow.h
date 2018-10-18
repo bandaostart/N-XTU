@@ -48,16 +48,14 @@ private:
     QTimer         *SerialTx_Timer;
     QTimer         *Test_Run_Timer;
 
-    enum {NullState = 0, ReadNodeID, RfTransmit, RfReceive, CurrentTransmit, CurrentReceive, CurrentSleep, CrystalOsc};
+    enum {NullState = 0, ReadNodeID, RfTransmit, RfReceive, CurrentTransmit, CurrentReceive, CurrentSleep, GPIO, CrystalOsc};
     unsigned char  Test_Run_State;
     unsigned int   Test_Run_Num;
 
+    QString        DMP_PortName;
     QString        DM_PortName;
     QString        DP_PortName;
-    int            Rf_Tx_Count;
-    int            Rf_Rx_Count;
-    int8_t         Rssi;
-    int            Rssi_Sum;
+    Rf_Rx_Tx_Para  DMP_RtxPara;
 
 
 private:
@@ -74,6 +72,8 @@ private:
 
     bool Port_Send_Deal(ModuleDeal *module_deal);
     void Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+
+    void Hash_Set_Deal(QString portname, uint8_t type_fun, uint8_t type_para);
 
 
 private slots:

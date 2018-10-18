@@ -19,7 +19,13 @@ QVector<uint16_t> AT_TypeReq{VR, NI, AP, SH, SL};
 QVector<uint16_t> AT_ReadID{SH, SL};
 
 //射频发送命令测试
-QVector<uint16_t> AT_RfTx(MODULE_RF_TX_NUM, RT);
+QVector<uint16_t> AT_RfTx{TO, RT, TR};
+
+//射频发送电流测试
+QVector<uint16_t> AT_RfTxCurrent{CT};
+
+//射频发送电流测试
+QVector<uint16_t> AT_RfRxCurrent{CR};
 
 
 
@@ -29,12 +35,14 @@ uint8_t  XbeePro_CheckSum(uint8_t length, uint8_t *input);
 bool     AT_Com_ReqType(ModuleDeal *module_deal, uint8_t *tx_buf, uint16_t &tx_num);
 bool     AT_Com_ReadID(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 bool     AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+bool     AT_Com_RfTxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+bool     AT_Com_RfRxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 
 void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 void     AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
-bool     AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, int8_t &rssi);
-
-
+uint8_t  AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, Rf_Rx_Tx_Para &rtx_para);
+void     AT_Com_RspRfTxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+void     AT_Com_RspRfRxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 
 
 /*AT请求指令-------------------------------------------------------------------------------------------------------------*/
@@ -121,6 +129,54 @@ bool AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
     if ((para->tx_num <= MODULE_RF_TX_NUM) && (para->tx_num > 0))
     {
         tx_num = AT_Com_Req(AT_RfTx[MODULE_RF_TX_NUM-para->tx_num], para->frame_id, tx_buf);
+
+        para->frame_id++;
+        para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
+
+        para->tx_num--;
+        para->search_count++;
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+/*发送电流测试-----------------------------------------------------------------------------------------------------*/
+bool AT_Com_RfTxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
+{
+    auto para = module_deal->serialtxrxPara;
+
+    if ((para->tx_num <= MODULE_CURRENT_TX_NUM) && (para->tx_num > 0))
+    {
+        tx_num = AT_Com_Req(AT_RfTxCurrent[MODULE_CURRENT_TX_NUM-para->tx_num], para->frame_id, tx_buf);
+
+        para->frame_id++;
+        para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
+
+        para->tx_num--;
+        para->search_count++;
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+/*接收电流测试-----------------------------------------------------------------------------------------------------*/
+bool AT_Com_RfRxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
+{
+    auto para = module_deal->serialtxrxPara;
+
+    if ((para->tx_num <= MODULE_CURRENT_RX_NUM) && (para->tx_num > 0))
+    {
+        tx_num = AT_Com_Req(AT_RfRxCurrent[MODULE_CURRENT_RX_NUM-para->tx_num], para->frame_id, tx_buf);
 
         para->frame_id++;
         para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
@@ -345,7 +401,7 @@ void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 
 
 
-bool AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, int8_t &rssi)
+uint8_t AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, Rf_Rx_Tx_Para &rtx_para)
 {
     uint8_t             sum = 0;
     uint16_t            AT_Command = 0;
@@ -357,13 +413,13 @@ bool AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, i
     length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
     if ((rx_buf[0] != 0x7E) || (length >= 255))
     {
-       return false;
+       return 0;
     }
 
     sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
     if (sum != rx_buf[XBeeApi_Header_Len+length-1])
     {
-        return false;
+        return 0;
     }
 
     pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
@@ -372,20 +428,126 @@ bool AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, i
 
     switch(AT_Command)
     {
-        case RT:                                                 //源64位地址高
+        case TO:                                                //发送测试接收打开
         {
-            rssi = (int8_t)rx_buf[XbeeApi_ATCom_Rsp_len];
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            return 1;
             break;
         }
+
+
+        case RT:                                                 //开始发送测试
+        {
+            rtx_para.tx_num =  rx_buf[XbeeApi_ATCom_Rsp_len];
+            rtx_para.tx_num =  (rtx_para.tx_num << 8);
+            rtx_para.tx_num += rx_buf[XbeeApi_ATCom_Rsp_len+1];
+
+            module_deal->serialtxrxPara->tx_count = 1;
+
+            return 2;
+            break;
+        }
+
+        case TF:                                                 //发送测试发送完成
+        {
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            return 3;
+            break;
+        }
+
+        case TR:                                                //发送测试结果读取
+        {
+            rtx_para.rssi   = (int8_t)rx_buf[XbeeApi_ATCom_Rsp_len];
+            rtx_para.rx_num =  rx_buf[XbeeApi_ATCom_Rsp_len+1];
+            rtx_para.rx_num =  (rtx_para.rx_num << 8);
+            rtx_para.rx_num += rx_buf[XbeeApi_ATCom_Rsp_len+2];
+
+            module_deal->serialtxrxPara->tx_count = 0;
+            return 4;
+            break;
+        }
+
     }
 
-    return true;
+    return 0;
 }
 
 
 
+void  AT_Com_RspRfTxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+    uint8_t             sum = 0;
+    uint16_t            AT_Command = 0;
+    uint16_t            AT_Length  = 0, length = 0;
+    XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return;
+    }
+
+    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+    switch(AT_Command)
+    {
+        case CT:                                                //发送电流测试应答
+        {
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            break;
+        }
+    }
+}
 
 
+void  AT_Com_RspRfRxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+    uint8_t             sum = 0;
+    uint16_t            AT_Command = 0;
+    uint16_t            AT_Length  = 0, length = 0;
+    XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return;
+    }
+
+    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+    switch(AT_Command)
+    {
+        case CR:                                                //接收电流测试应答
+        {
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            break;
+        }
+    }
+}
 
 
 

@@ -475,6 +475,7 @@ void ConsoleWindow::paintEvent(QPaintEvent *event)
     brush.setStyle(Qt::SolidPattern);
 
 
+    //设置背景色
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.drawRect(Top_Tool_Bar->x(), Top_Tool_Bar->y(), Top_Tool_Bar->width(), Top_Tool_Bar->height());
@@ -483,6 +484,8 @@ void ConsoleWindow::paintEvent(QPaintEvent *event)
     painter.drawRect(Bottom_Group_Box->x(), Bottom_Group_Box->y(), Bottom_Group_Box->width(), Bottom_Group_Box->height());
     painter.drawRect(Right_Group_Box->x(), Right_Group_Box->y(), Right_Group_Box->width(), Right_Group_Box->height());
 
+
+    //画连接线
     pen.setStyle(Qt::SolidLine);
     pen.setColor(QColor(72,170,6));
     painter.setPen(pen);

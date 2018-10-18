@@ -115,7 +115,17 @@
 
 //射频测试
 #define         RT                                      CONVERSION('R', 'T')    //射频发送测试
+#define         TF                                      CONVERSION('T', 'F')    //发送测试发送完成
+#define         TO                                      CONVERSION('T', 'O')    //发送测试接收端打开
+#define         TR                                      CONVERSION('T', 'R')    //发送测试结果读取
+#define         CT                                      CONVERSION('C', 'T')    //发送电流测试
+#define         CR                                      CONVERSION('C', 'R')    //接收电流测试
+#define         CS                                      CONVERSION('C', 'S')    //休眠电流测试
+#define         IO                                      CONVERSION('I', 'O')    //GPIO测试
+#define         CO                                      CONVERSION('C', 'O')    //晶振测试
+
 #define         RR                                      CONVERSION('R', 'R')    //射频接收测试
+#define         RF                                      CONVERSION('R', 'F')    //接收测试完成
 
 
 #define API_START_DATA                                  0x7E                    //起始数据
@@ -523,24 +533,47 @@ typedef struct
 
 
 /*用户变量定义---------------------------------------------------------------------------------*/
+#pragma pack(1)                                                                 //XbeeApi 多对一路由请求 0xA3
+typedef struct
+{
+    int8_t      rssi;
+    uint16_t    tx_num;
+    uint16_t    rx_num;
+}Rf_Rx_Tx_Para;
+#pragma pack()
+
+
 #define MODULE_REQ_NULL                   0xFF                                    //无命令发送
 #define MODULE_TYPE_REQ_FUN               0x01                                    //设备信息类型请求
 #define MODULE_READ_ID_FUN                0x02                                    //读取ID
 #define MODULE_RF_TX_FUN                  0x03                                    //发送测试
 #define MODULE_RF_RX_FUN                  0x04                                    //接收测试
 #define MODULE_CURRENT_TX_FUN             0x05                                    //发送电流测试
+#define MODULE_CURRENT_RX_FUN             0x06                                    //接收电流测试
+#define MODULE_CURRENT_SLEEP_FUN          0x07                                    //休眠电流测试
+#define MODULE_GPIO_FUN                   0x08                                    //GPIO测试
+#define MODULE_OSC_FUN                    0x09                                    //晶振测试
 
 #define MODULE_TYPE_REQ_NUM               5
 #define MODULE_READ_ID_NUM                2
-#define MODULE_RF_TX_NUM                  10
-#define MODULE_RF_RX_NUM                  10
+#define MODULE_RF_TX_NUM                  3
+#define MODULE_RF_RX_NUM                  3
 #define MODULE_CURRENT_TX_NUM             1
+#define MODULE_CURRENT_RX_NUM             1
+#define MODULE_CURRENT_SLEEP_NUM          1
+#define MODULE_GPIO_NUM                   1
+#define MODULE_OSC_NUM                    1
 
 
 #define MODULE_TYPE_REQ_INTERVAL          3000
-#define MODULE_RF_TX_INTERVAL             100
-#define MODULE_RF_RX_INTERVAL             100
+#define MODULE_READ_ID_INTERVAL           3000
+#define MODULE_RF_TX_INTERVAL             8000
+#define MODULE_RF_RX_INTERVAL             8000
 #define MODULE_CURRENT_TX_INTERVAL        3000
+#define MODULE_CURRENT_RX_INTERVAL        3000
+#define MODULE_CURRENT_SLEEP_INTERVAL     3000
+#define MODULE_GPIO_INTERVAL              3000
+#define MODULE_OSC_INTERVAL               3000
 
 
 

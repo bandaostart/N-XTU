@@ -3,10 +3,14 @@
 extern bool     AT_Com_ReqType(ModuleDeal *module_deal, uint8_t *tx_buf, uint16_t &tx_num);
 extern bool     AT_Com_ReadID(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 extern bool     AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+extern bool     AT_Com_RfTxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+extern bool     AT_Com_RfRxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 
 extern void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 extern void     AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
-extern bool     AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, int8_t &rssi);
+extern uint8_t  AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, Rf_Rx_Tx_Para &rtx_para);
+extern void     AT_Com_RspRfTxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+extern void     AT_Com_RspRfRxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -170,10 +174,153 @@ void MainWindow::Init_Window_Para()
     DM_PortName = "";
     DP_PortName = "";
 
-    Rf_Tx_Count = 0;
-    Rf_Rx_Count = 0;
-    Rssi        = 0;
-    Rssi_Sum    = 0;
+    DMP_RtxPara.rssi = 0;
+    DMP_RtxPara.rx_num = 0;
+    DMP_RtxPara.tx_num = 0;
+}
+
+
+/*Hash配置-------------------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Hash_Set_Deal(QString portname, uint8_t type_fun, uint8_t type_para)
+{
+    auto module = Module_Deal_Hash.begin();
+    while (module != Module_Deal_Hash.end())
+    {
+        if ((module.key() == portname))
+        {
+            auto temp_serialtxrxPara = module.value()->serialtxrxPara;
+            switch(type_fun)
+            {
+                case MODULE_REQ_NULL:
+                {
+
+                    temp_serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x00;
+                        temp_serialtxrxPara->tx_num             = 0x00;
+                        temp_serialtxrxPara->tx_interval        = 0x00;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = 0x00;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
+                case MODULE_TYPE_REQ_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_TYPE_REQ_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_TYPE_REQ_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = MODULE_TYPE_REQ_NUM;
+                        temp_serialtxrxPara->tx_interval        = MODULE_TYPE_REQ_INTERVAL;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = MODULE_TYPE_REQ_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
+                case MODULE_READ_ID_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_READ_ID_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_READ_ID_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = MODULE_READ_ID_NUM;
+                        temp_serialtxrxPara->tx_interval        = MODULE_READ_ID_INTERVAL;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = MODULE_READ_ID_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
+                case MODULE_RF_TX_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_RF_TX_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_RF_TX_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = MODULE_RF_TX_NUM;
+                        temp_serialtxrxPara->tx_interval        = MODULE_RF_TX_INTERVAL;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = MODULE_RF_TX_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
+                case MODULE_RF_RX_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_RF_RX_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_RF_RX_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = MODULE_RF_RX_NUM;
+                        temp_serialtxrxPara->tx_interval        = MODULE_RF_RX_INTERVAL;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = MODULE_RF_RX_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
+                case MODULE_CURRENT_TX_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_CURRENT_TX_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_CURRENT_TX_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = MODULE_CURRENT_TX_NUM;
+                        temp_serialtxrxPara->tx_interval        = MODULE_CURRENT_TX_INTERVAL;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = MODULE_CURRENT_TX_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
+                case MODULE_CURRENT_RX_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_CURRENT_RX_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_CURRENT_RX_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = MODULE_CURRENT_RX_NUM;
+                        temp_serialtxrxPara->tx_interval        = MODULE_CURRENT_RX_INTERVAL;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = MODULE_CURRENT_RX_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+            }
+        }
+        ++module;
+    }
 }
 
 
@@ -244,9 +391,26 @@ void MainWindow::Close_SearchDialog(const QString &portname)
 /*测试运行定时器 槽函数-----------------------------------------------------------------------------------------*/
 void MainWindow::Slot_TestRunTimer()
 {
-    qDebug()<< "Test_Run_Num" << QString::number(Test_Run_Num);
 
-    right_window->Console_Window->Set_RecordLabel(++Test_Run_Num);
+    right_window->Console_Window->Set_RecordLabel((++Test_Run_Num)/10);
+
+    switch (Test_Run_State)
+    {
+        case RfTransmit:
+        case RfReceive:
+        {
+            QString str = "";
+            str =  "RSSI:###";
+            str += "  PER:#####";
+            str += "  TX:";
+            str += QString::number(DMP_RtxPara.tx_num);
+            str += "  RX:";
+            str += QString::number((Test_Run_Num%1000));
+            right_window->Console_Window->NameText[Test_Run_State-1]->setText(str);
+
+            break;
+        }
+    }
 }
 
 
@@ -261,30 +425,11 @@ void MainWindow::Slot_StartStopTest_FromConsoleWin(const bool &state, const QStr
 
         Test_Run_State = ReadNodeID;
         Test_Run_Num   = 0;
-        Test_Run_Timer->start(100);
+        Test_Run_Timer->start(10);
 
         right_window->Console_Window->Set_StatusText(0, 1);
 
-        auto module = Module_Deal_Hash.begin();
-        while (module != Module_Deal_Hash.end())
-        {
-            if ((module.key() == DM_PortName))
-            {
-                auto temp_serialtxrxPara = module.value()->serialtxrxPara;
-                temp_serialtxrxPara->rx_func_type       = MODULE_READ_ID_FUN;
-                temp_serialtxrxPara->tx_func_type       = MODULE_READ_ID_FUN;
-                temp_serialtxrxPara->frame_id           = 0x01;
-                temp_serialtxrxPara->tx_num             = MODULE_READ_ID_NUM;
-                temp_serialtxrxPara->tx_interval        = MODULE_TYPE_REQ_INTERVAL;
-                temp_serialtxrxPara->tx_count           = 0x00;
-                temp_serialtxrxPara->search_count       = 0x00;
-                temp_serialtxrxPara->search_total_count = MODULE_TYPE_REQ_NUM;
-                temp_serialtxrxPara->search_total_flag  = 0x00;
-            }
-            ++module;
-        }
-
-
+        this->Hash_Set_Deal(DM_PortName, MODULE_READ_ID_FUN, 0);
     }
     else
     {
@@ -293,24 +438,8 @@ void MainWindow::Slot_StartStopTest_FromConsoleWin(const bool &state, const QStr
         right_window->Console_Window->Set_RecordLabel(Test_Run_Num);
         Test_Run_Timer->stop();
 
-        auto module = Module_Deal_Hash.begin();
-        while (module != Module_Deal_Hash.end())
-        {
-            if ((module.key() == DM_PortName) || (module.key() == DP_PortName))
-            {
-                auto temp_serialtxrxPara = module.value()->serialtxrxPara;
-                temp_serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                temp_serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                temp_serialtxrxPara->frame_id           = 0x00;
-                temp_serialtxrxPara->tx_num             = 0x00;
-                temp_serialtxrxPara->tx_interval        = 0x00;
-                temp_serialtxrxPara->tx_count           = 0x00;
-                temp_serialtxrxPara->search_count       = 0x00;
-                temp_serialtxrxPara->search_total_count = 0x00;
-                temp_serialtxrxPara->search_total_flag  = 0x00;
-            }
-            ++module;
-        }
+        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
         DM_PortName = "";
         DP_PortName = "";
@@ -390,17 +519,11 @@ void MainWindow::Open_Serial_Deal()
     }
     else
     {
+        //获取串口名字
+        DMP_PortName = Serial_Dialog->Serial_Port_Settings.portName;
+
         //请求模块相关信息
-        auto temp_serialtxrxPara = Module_Deal_Hash.value(Serial_Dialog->Serial_Port_Settings.portName)->serialtxrxPara;
-        temp_serialtxrxPara->rx_func_type       = MODULE_TYPE_REQ_FUN;
-        temp_serialtxrxPara->tx_func_type       = MODULE_TYPE_REQ_FUN;
-        temp_serialtxrxPara->frame_id           = 0x01;
-        temp_serialtxrxPara->tx_num             = MODULE_TYPE_REQ_NUM;
-        temp_serialtxrxPara->tx_interval        = MODULE_TYPE_REQ_INTERVAL;
-        temp_serialtxrxPara->tx_count           = 0x00;
-        temp_serialtxrxPara->search_count       = 0x00;
-        temp_serialtxrxPara->search_total_count = MODULE_TYPE_REQ_NUM;
-        temp_serialtxrxPara->search_total_flag  = 0x00;
+        this->Hash_Set_Deal(Serial_Dialog->Serial_Port_Settings.portName, MODULE_TYPE_REQ_FUN, 0);
 
         //显示搜索对话框
         search_dialog.Port_Name = Serial_Dialog->Serial_Port_Settings.portName;
@@ -413,6 +536,8 @@ void MainWindow::Open_Serial_Deal()
 /*串口接收处理--------------------------------------------------------------------------------------------------------------*/
 void MainWindow::Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 {
+    uint8_t   deal_type = 0;
+
     auto para = module_deal->serialtxrxPara;
 
     switch (para->rx_func_type)
@@ -427,25 +552,73 @@ void MainWindow::Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uin
 
         case MODULE_RF_TX_FUN:
         {
-            if (AT_Com_RspRfTx(module_deal, rx_buf, rx_num, Rssi))
+            deal_type = AT_Com_RspRfTx(module_deal, rx_buf, rx_num, DMP_RtxPara);
+            switch (deal_type)
             {
-                 QString str = "";
+                case 1:
+                    this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 1);
+                    this->Hash_Set_Deal(DM_PortName, MODULE_RF_TX_FUN, 1);
+                    Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->frame_id =Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->frame_id;
+                    Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_num   =Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_num;
+                    Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_count =Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_count;
+                break;
 
-                 str = "RSSI:";
+                case 2:
+                break;
 
-                 Rf_Rx_Count++;
-                 Rssi_Sum += Rssi;
-                 str += QString::number(Rssi);
-                 str += "  RX:";
-                 str += QString::number(Rf_Rx_Count);
-                 str += "  TX:";
-                 str += QString::number(Rf_Tx_Count);
-                 str += "  PER:";
-                 right_window->Console_Window->NameText[1]->setText(str);
+                case 3:
+                    this->Hash_Set_Deal(DP_PortName, MODULE_RF_TX_FUN, 1);
+                    this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 1);
+                    Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->frame_id =Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->frame_id;
+                    Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_num   =Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_num;
+                    Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_count =Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_count;
+                break;
+
+                case 4:
+                break;
             }
 
             break;
-         }
+        }
+
+        case MODULE_RF_RX_FUN:
+        {
+            deal_type = AT_Com_RspRfTx(module_deal, rx_buf, rx_num, DMP_RtxPara);
+            switch (deal_type)
+            {
+                case 1:
+                    this->Hash_Set_Deal(DP_PortName, MODULE_RF_RX_FUN, 1);
+                    this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 1);
+                    Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->frame_id =Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->frame_id;
+                    Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_num   =Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_num;
+                    Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_count =Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_count;
+                break;
+
+                case 2:
+                break;
+
+                case 3:
+                    this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 1);
+                    this->Hash_Set_Deal(DM_PortName, MODULE_RF_RX_FUN, 1);
+                    Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->frame_id =Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->frame_id;
+                    Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_num   =Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_num;
+                    Module_Deal_Hash.value(DM_PortName)->serialtxrxPara->tx_count =Module_Deal_Hash.value(DP_PortName)->serialtxrxPara->tx_count;
+                break;
+
+                case 4:
+                break;
+            }
+
+            break;
+        }
+
+        case MODULE_CURRENT_TX_FUN:
+            AT_Com_RspRfTxCurrent(module_deal, rx_buf, rx_num);
+        break;
+
+        case MODULE_CURRENT_RX_FUN:
+            AT_Com_RspRfRxCurrent(module_deal, rx_buf, rx_num);
+        break;
 
         default:
         break;
@@ -476,14 +649,7 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         emit search_dialog.Signal_DialogClose();
 
                         //左侧窗口添加模块对话框
-                        module_deal->serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                        module_deal->serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                        module_deal->serialtxrxPara->tx_num             = 0x00;
-                        module_deal->serialtxrxPara->tx_interval        = 0x00;
-                        module_deal->serialtxrxPara->tx_count           = 0x00;
-                        module_deal->serialtxrxPara->search_count       = 0x00;
-                        module_deal->serialtxrxPara->search_total_count = 0x01;
-                        module_deal->serialtxrxPara->search_total_flag  = 0x00;
+                        this->Hash_Set_Deal(DMP_PortName, MODULE_REQ_NULL, 0);
 
                         //设置module模块参数
                         module_deal->moduleWindow->ModuleInfo_Set();
@@ -549,45 +715,11 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         Test_Run_State = RfTransmit;
                         right_window->Console_Window->Set_StatusText(1, 1);
 
-                        Rf_Rx_Count = 0;
-                        Rf_Tx_Count = 0;
-                        Rssi        = 0;
-                        Rssi_Sum    = 0;
-                        auto module = Module_Deal_Hash.begin();
-                        while (module != Module_Deal_Hash.end())
-                        {
-                            if (module.key() == DM_PortName)
-                            {
-                                auto module_deal = module.value();
-                                module_deal->serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->tx_func_type       = MODULE_RF_TX_FUN;
-                                module_deal->serialtxrxPara->frame_id           = 0x00;
-                                module_deal->serialtxrxPara->tx_num             = MODULE_RF_TX_NUM;
-                                module_deal->serialtxrxPara->tx_interval        = MODULE_RF_TX_INTERVAL;
-                                module_deal->serialtxrxPara->tx_count           = 0x00;
-                                module_deal->serialtxrxPara->search_count       = 0x00;
-                                module_deal->serialtxrxPara->search_total_count = MODULE_RF_TX_NUM;
-                                module_deal->serialtxrxPara->search_total_flag  = 0x00;
-                            }
-                            else
-                            {
-                                if (module.key() == DP_PortName)
-                                {
-                                    auto module_deal = module.value();
+                        Test_Run_Num = 400;
+                        this->Hash_Set_Deal(DM_PortName, MODULE_RF_TX_FUN, 0);
+                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 1);
 
-                                    module_deal->serialtxrxPara->rx_func_type       = MODULE_RF_TX_FUN;
-                                    module_deal->serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                                    module_deal->serialtxrxPara->frame_id           = 0x00;
-                                    module_deal->serialtxrxPara->tx_num             = MODULE_RF_TX_NUM;
-                                    module_deal->serialtxrxPara->tx_interval        = MODULE_RF_TX_INTERVAL;
-                                    module_deal->serialtxrxPara->tx_count           = 0x00;
-                                    module_deal->serialtxrxPara->search_count       = 0x00;
-                                    module_deal->serialtxrxPara->search_total_count = MODULE_RF_TX_NUM;
-                                    module_deal->serialtxrxPara->search_total_flag  = 0x00;
-                                }
-                            }
-                            ++module;
-                        }
+                        this->Hash_Set_Deal(DP_PortName, MODULE_RF_TX_FUN, 0);
 
                         return true;
                     }
@@ -610,15 +742,7 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        module_deal->serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                        module_deal->serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                        module_deal->serialtxrxPara->tx_num             = 0x00;
-                        module_deal->serialtxrxPara->tx_interval        = 0x00;
-                        module_deal->serialtxrxPara->tx_count           = 0x00;
-                        module_deal->serialtxrxPara->search_count       = 0x00;
-                        module_deal->serialtxrxPara->search_total_count = 0x01;
-                        module_deal->serialtxrxPara->search_total_flag  = 0x00;
-
+                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
                         return false;
                     }
                 }
@@ -631,94 +755,50 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
             //射频发送测试
             case MODULE_RF_TX_FUN:
             {
-                if ((module_deal->serialtxrxPara->tx_count == 0)
-                     || (module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval))
+                if (module_deal->serialtxrxPara->tx_count == 0)
                 {
                     if (module_deal->serialtxrxPara->tx_num == 0)
                     {
-                        //测试完成
+                        //console window相关设置
+                        right_window->Console_Window->Set_NamePix(1, 1);
+                        Test_Run_State = RfReceive;
+                        right_window->Console_Window->Set_StatusText(2, 1);
+
+                        //显示测试结果
                         {
                             QString str = "";
                             str = "RSSI:";
-                            if (Rf_Rx_Count != 0)
-                            {
-                                Rssi = Rssi_Sum/Rf_Rx_Count;
-                            }
-                            else
-                            {
-                                Rssi = 0x80;
-                            }
-                            str += QString::number(Rssi);
-                            str += "  RX:";
-                            str += QString::number(Rf_Rx_Count);
-                            str += "  TX:";
-                            str += QString::number(Rf_Tx_Count);
-                            str += "  PER:";
+                            str += QString::number(DMP_RtxPara.rssi);
 
-                            float rx_count = Rf_Rx_Count, tx_count = Rf_Tx_Count;
+                            str += "  PER:";
+                            float rx_count = DMP_RtxPara.rx_num, tx_count = DMP_RtxPara.tx_num;
                             float per;
                             per = rx_count/tx_count;
                             per *= 100;
                             str += QString("%1").arg(per,0,'f',1);
                             str += "%";
 
+                            str += "  TX:";
+                            str += QString::number(DMP_RtxPara.tx_num);
+
+                            str += "  RX:";
+                            str += QString::number(DMP_RtxPara.rx_num);
+
                             right_window->Console_Window->NameText[1]->setText(str);
                         }
 
-                        //console window相关设置
-                        right_window->Console_Window->Set_NamePix(1, 1);
-                        Test_Run_State = RfReceive;
-                        right_window->Console_Window->Set_StatusText(2, 1);
+                        //下一步进行接收测试
+                        Test_Run_Num = 400;
+                        this->Hash_Set_Deal(DM_PortName, MODULE_RF_RX_FUN, 0);
 
-
-                        //配置下一步 接收发送
-                        Rf_Rx_Count = 0;
-                        Rf_Tx_Count = 0;
-                        Rssi        = 0;
-                        Rssi_Sum    = 0;
-                        auto module = Module_Deal_Hash.begin();
-                        while (module != Module_Deal_Hash.end())
-                        {
-                            if (module.key() == DM_PortName)
-                            {
-                                auto module_deal = module.value();
-                                module_deal->serialtxrxPara->rx_func_type       = MODULE_RF_RX_FUN;
-                                module_deal->serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->frame_id           = 0x01;
-                                module_deal->serialtxrxPara->tx_num             = MODULE_RF_RX_NUM;
-                                module_deal->serialtxrxPara->tx_interval        = MODULE_RF_RX_INTERVAL;
-                                module_deal->serialtxrxPara->tx_count           = 0x00;
-                                module_deal->serialtxrxPara->search_count       = 0x00;
-                                module_deal->serialtxrxPara->search_total_count = MODULE_RF_RX_NUM;
-                                module_deal->serialtxrxPara->search_total_flag  = 0x00;
-                            }
-                            else
-                            {
-                                if (module.key() == DP_PortName)
-                                {
-                                    auto module_deal = module.value();
-                                    module_deal->serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                                    module_deal->serialtxrxPara->tx_func_type       = MODULE_RF_RX_FUN;
-                                    module_deal->serialtxrxPara->frame_id           = 0x01;
-                                    module_deal->serialtxrxPara->tx_num             = MODULE_RF_RX_NUM;
-                                    module_deal->serialtxrxPara->tx_interval        = MODULE_RF_RX_INTERVAL;
-                                    module_deal->serialtxrxPara->tx_count           = 0x00;
-                                    module_deal->serialtxrxPara->search_count       = 0x00;
-                                    module_deal->serialtxrxPara->search_total_count = MODULE_RF_RX_NUM;
-                                    module_deal->serialtxrxPara->search_total_flag  = 0x00;
-                                }
-                            }
-
-                            ++module;
-                        }
+                        this->Hash_Set_Deal(DP_PortName, MODULE_RF_RX_FUN, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 1);
 
                         return true;
                     }
                     else
                     {
                         //发送请求命令
-                        Rf_Tx_Count++;
-                        module_deal->serialtxrxPara->tx_count = 0;
                         AT_Com_RfTx(module_deal, tx_buf, tx_num);
                         module_deal->serialThread->SerialTxData(tx_buf, tx_num);
                     }
@@ -735,24 +815,8 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        auto module = Module_Deal_Hash.begin();
-                        while (module != Module_Deal_Hash.end())
-                        {
-                            if ((module.key() == DM_PortName) || (module.key() == DP_PortName))
-                            {
-                                auto module_deal = module.value();
-
-                                module_deal->serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->frame_id           = 0x01;
-                                module_deal->serialtxrxPara->tx_num             = 0x00;
-                                module_deal->serialtxrxPara->tx_interval        = 0x00;
-                                module_deal->serialtxrxPara->tx_count           = 0x00;
-                                module_deal->serialtxrxPara->search_count       = 0x00;
-                                module_deal->serialtxrxPara->search_total_count = 0x00;
-                                module_deal->serialtxrxPara->search_total_flag  = 0x00;
-                            }
-                        }
+                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -765,70 +829,48 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
             //射频接收测试
             case MODULE_RF_RX_FUN:
             {
-                if ((module_deal->serialtxrxPara->tx_count == 0)
-                     || (module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval))
+                if (module_deal->serialtxrxPara->tx_count == 0)
                 {
                     if (module_deal->serialtxrxPara->tx_num == 0)
                     {
+                        //console window相关设置
+                        right_window->Console_Window->Set_NamePix(2, 1);
+                        Test_Run_State = CurrentTransmit;
+                        right_window->Console_Window->Set_StatusText(3, 1);
+
+                        //显示测试结果
                         {
                             QString str = "";
                             str = "RSSI:";
-                            if (Rf_Rx_Count != 0)
-                            {
-                                Rssi = Rssi_Sum/Rf_Rx_Count;
-                            }
-                            else
-                            {
-                                Rssi = 0x80;
-                            }
-                            str += QString::number(Rssi);
-                            str += "  RX:";
-                            str += QString::number(Rf_Rx_Count);
-                            str += "  TX:";
-                            str += QString::number(Rf_Tx_Count);
-                            str += "  PER:";
+                            str += QString::number(DMP_RtxPara.rssi);
 
-                            float rx_count = Rf_Rx_Count, tx_count = Rf_Tx_Count;
+                            str += "  PER:";
+                            float rx_count = DMP_RtxPara.rx_num, tx_count = DMP_RtxPara.tx_num;
                             float per;
                             per = rx_count/tx_count;
                             per *= 100;
                             str += QString("%1").arg(per,0,'f',1);
                             str += "%";
 
+                            str += "  TX:";
+                            str += QString::number(DMP_RtxPara.tx_num);
+
+                            str += "  RX:";
+                            str += QString::number(DMP_RtxPara.rx_num);
+
                             right_window->Console_Window->NameText[2]->setText(str);
                         }
 
-                        right_window->Console_Window->Set_NamePix(2, 1);
-                        Test_Run_State = CurrentTransmit;
-                        right_window->Console_Window->Set_StatusText(3, 1);
-
-
-                        auto module = Module_Deal_Hash.begin();
-                        while (module != Module_Deal_Hash.end())
-                        {
-                            if ((module.key() == DM_PortName) || (module.key() == DP_PortName))
-                            {
-                                auto module_deal = module.value();
-                                module_deal->serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->frame_id           = 0x01;
-                                module_deal->serialtxrxPara->tx_num             = MODULE_CURRENT_TX_NUM;
-                                module_deal->serialtxrxPara->tx_interval        = MODULE_CURRENT_TX_INTERVAL;
-                                module_deal->serialtxrxPara->tx_count           = 0x00;
-                                module_deal->serialtxrxPara->search_count       = 0x00;
-                                module_deal->serialtxrxPara->search_total_count = MODULE_CURRENT_TX_NUM;
-                                module_deal->serialtxrxPara->search_total_flag  = 0x00;
-                            }
-                            ++module;
-                        }
+                        //下一步进行接收测试
+                        Test_Run_Num = 0;
+                        this->Hash_Set_Deal(DM_PortName, MODULE_CURRENT_TX_FUN, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return true;
                     }
                     else
                     {
                         //发送请求命令
-                        Rf_Tx_Count++;
-                        module_deal->serialtxrxPara->tx_count = 0;
                         AT_Com_RfTx(module_deal, tx_buf, tx_num);
                         module_deal->serialThread->SerialTxData(tx_buf, tx_num);
                     }
@@ -845,24 +887,109 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        auto module = Module_Deal_Hash.begin();
-                        while (module != Module_Deal_Hash.end())
-                        {
-                            if ((module.key() == DM_PortName) || (module.key() == DP_PortName))
-                            {
-                                auto module_deal = module.value();
+                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
-                                module_deal->serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
-                                module_deal->serialtxrxPara->frame_id           = 0x00;
-                                module_deal->serialtxrxPara->tx_num             = 0x00;
-                                module_deal->serialtxrxPara->tx_interval        = 0x00;
-                                module_deal->serialtxrxPara->tx_count           = 0x00;
-                                module_deal->serialtxrxPara->search_count       = 0x00;
-                                module_deal->serialtxrxPara->search_total_count = 0x00;
-                                module_deal->serialtxrxPara->search_total_flag  = 0x00;
-                            }
+                        return false;
+                    }
+                }
+                module_deal->serialtxrxPara->tx_count++;
+
+                break;
+            }
+
+
+            //射频发送电流测试
+            case MODULE_CURRENT_TX_FUN:
+            {
+                if (module_deal->serialtxrxPara->tx_count == 0)
+                {
+                    if (module_deal->serialtxrxPara->tx_num == 0)
+                    {
+                        //console window相关设置
+                        right_window->Console_Window->Set_NamePix(3, 1);
+                        Test_Run_State = CurrentReceive;
+                        right_window->Console_Window->Set_StatusText(4, 1);
+
+
+                        //下一步进行接收测试
+                        Test_Run_Num = 0;
+                        this->Hash_Set_Deal(DM_PortName, MODULE_CURRENT_RX_FUN, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+                        return true;
+                    }
+                    else
+                    {
+                        //发送请求命令
+                        AT_Com_RfTxCurrent(module_deal, tx_buf, tx_num);
+                        module_deal->serialThread->SerialTxData(tx_buf, tx_num);
+                    }
+                }
+                else
+                {
+                    if ((module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval)
+                         || (module_deal->serialtxrxPara->search_total_flag == 0x01))
+                    {
+                        if (module_deal->serialtxrxPara->search_total_flag == 0x00)
+                        {
+                            //告警提示
+                            QMessageBox::critical(NULL, "Error discovering device",
+                                                  module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
+
+                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+                        return false;
+                    }
+                }
+                module_deal->serialtxrxPara->tx_count++;
+
+                break;
+            }
+
+            //射频接收电流测试
+            case MODULE_CURRENT_RX_FUN:
+            {
+                if (module_deal->serialtxrxPara->tx_count == 0)
+                {
+                    if (module_deal->serialtxrxPara->tx_num == 0)
+                    {
+                        //console window相关设置
+                        right_window->Console_Window->Set_NamePix(4, 1);
+                        Test_Run_State = CurrentSleep;
+                        right_window->Console_Window->Set_StatusText(5, 1);
+
+
+                        //下一步进行接收测试
+                        Test_Run_Num = 0;
+                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+                        return true;
+                    }
+                    else
+                    {
+                        //发送请求命令
+                        AT_Com_RfRxCurrent(module_deal, tx_buf, tx_num);
+                        module_deal->serialThread->SerialTxData(tx_buf, tx_num);
+                    }
+                }
+                else
+                {
+                    if ((module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval)
+                         || (module_deal->serialtxrxPara->search_total_flag == 0x01))
+                    {
+                        if (module_deal->serialtxrxPara->search_total_flag == 0x00)
+                        {
+                            //告警提示
+                            QMessageBox::critical(NULL, "Error discovering device",
+                                                  module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
+                        }
+
+                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -880,6 +1007,10 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
     return true;
 }
+
+
+
+
 
 
 
