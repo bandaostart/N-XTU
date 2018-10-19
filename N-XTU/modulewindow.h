@@ -60,6 +60,9 @@ public:
     QString      Text_Content[NumParaRow+1];
     QString      Node_Type;
 
+    double       Ammeter_Data;
+    QString      Ammeter_Text;
+
 
 };
 

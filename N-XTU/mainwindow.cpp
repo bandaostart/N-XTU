@@ -11,7 +11,7 @@ extern void     AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t 
 extern uint8_t  AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, Rf_Rx_Tx_Para &rtx_para);
 extern void     AT_Com_RspRfTxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 extern void     AT_Com_RspRfRxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
-
+extern void     AT_Com_RxAmmeter(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -71,6 +71,7 @@ void MainWindow::Creat_MenuBar()
     NxtuMenu->addAction(Preferences_Action);
     NxtuMenu->addAction(Exit_Action);
 
+
     //管理消息和槽函数
     connect(Add_Action,  &QAction::triggered, this, &MainWindow::Open_SerialDialog);
     connect(Exit_Action, &QAction::triggered, this, &MainWindow::Application_Exit);
@@ -87,8 +88,8 @@ void MainWindow::Creat_MenuBar()
 /*创建工具栏----------------------------------------------------------------------------------------------------*/
 void MainWindow::Creat_ToolBar()
 {
-    QAction *Add_Action     = new QAction(QIcon(":/image/add.png"), tr("Add Radio Module"), this);
-    QAction *Search_Action  = new QAction(QIcon(":/image/search.png"), tr("Discover Radio Modules"), this);
+    QAction *Add_Action      = new QAction(QIcon(":/image/add.png"), tr("Add Radio Module"), this);
+    QAction *Search_Action   = new QAction(QIcon(":/image/search.png"), tr("Discover Radio Modules"), this);
 
     Tool_Bar = new QToolBar(this);
     Tool_Bar->setStyleSheet("QToolBar{border-style:outset}");
@@ -96,6 +97,7 @@ void MainWindow::Creat_ToolBar()
     Tool_Bar->setIconSize(QSize(48,48));
     Tool_Bar->addAction(Add_Action);
     Tool_Bar->addAction(Search_Action);
+
 
     connect(Add_Action, &QAction::triggered, this, &MainWindow::Open_SerialDialog);
     this->addToolBar(Tool_Bar);
@@ -193,7 +195,6 @@ void MainWindow::Hash_Set_Deal(QString portname, uint8_t type_fun, uint8_t type_
             {
                 case MODULE_REQ_NULL:
                 {
-
                     temp_serialtxrxPara->rx_func_type       = MODULE_REQ_NULL;
                     temp_serialtxrxPara->tx_func_type       = MODULE_REQ_NULL;
                     if (type_para == 0)
@@ -312,6 +313,25 @@ void MainWindow::Hash_Set_Deal(QString portname, uint8_t type_fun, uint8_t type_
                         temp_serialtxrxPara->tx_count           = 0x00;
                         temp_serialtxrxPara->search_count       = 0x00;
                         temp_serialtxrxPara->search_total_count = MODULE_CURRENT_RX_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
+
+                case MODULE_AMMETER_RX_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_AMMETER_RX_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_AMMETER_RX_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = 0x01;
+                        temp_serialtxrxPara->tx_interval        = 0x00;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = 0x00;
                         temp_serialtxrxPara->search_total_flag  = 0x00;
                     }
 
@@ -520,7 +540,7 @@ void MainWindow::Open_Serial_Deal()
     else
     {
         //获取串口名字
-        DMP_PortName = Serial_Dialog->Serial_Port_Settings.portName;
+        DMPA_PortName = Serial_Dialog->Serial_Port_Settings.portName;
 
         //请求模块相关信息
         this->Hash_Set_Deal(Serial_Dialog->Serial_Port_Settings.portName, MODULE_TYPE_REQ_FUN, 0);
@@ -544,6 +564,10 @@ void MainWindow::Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uin
     {
         case MODULE_TYPE_REQ_FUN:
             AT_Com_RspType(module_deal, rx_buf, rx_num);
+        break;
+
+        case MODULE_AMMETER_RX_FUN:
+            AT_Com_RxAmmeter(module_deal, rx_buf, rx_num);
         break;
 
         case MODULE_READ_ID_FUN:
@@ -649,7 +673,14 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         emit search_dialog.Signal_DialogClose();
 
                         //左侧窗口添加模块对话框
-                        this->Hash_Set_Deal(DMP_PortName, MODULE_REQ_NULL, 0);
+                        if (module_deal->moduleWindow->Node_Type == "DA")
+                        {
+                            this->Hash_Set_Deal(DMPA_PortName, MODULE_AMMETER_RX_FUN, 0);
+                        }
+                        else
+                        {
+                            this->Hash_Set_Deal(DMPA_PortName, MODULE_REQ_NULL, 0);
+                        }
 
                         //设置module模块参数
                         module_deal->moduleWindow->ModuleInfo_Set();
@@ -700,6 +731,21 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                 break;
             }
+
+
+
+            //电流表电流接收处理
+            case MODULE_AMMETER_RX_FUN:
+            {
+                if (module_deal->serialtxrxPara->tx_num == 0x00)
+                {
+                    right_window->Console_Window->Set_AmmeterData(module_deal->moduleWindow->Ammeter_Text);
+                    module_deal->serialtxrxPara->tx_num = 0x01;
+                }
+
+                break;
+            }
+
 
 
             //模块ID读取

@@ -52,7 +52,7 @@ private:
     unsigned char  Test_Run_State;
     unsigned int   Test_Run_Num;
 
-    QString        DMP_PortName;
+    QString        DMPA_PortName;
     QString        DM_PortName;
     QString        DP_PortName;
     Rf_Rx_Tx_Para  DMP_RtxPara;

@@ -58,5 +58,14 @@
         <file>image/xbee_search7.png</file>
         <file>image/read_settings.png</file>
         <file>image/micropython_console.png</file>
+        <file>image/ssid_search7.png</file>
+        <file>image/firmware_update1.png</file>
+        <file>image/firmware_update2.png</file>
+        <file>image/firmware_update3.png</file>
+        <file>image/firmware_update4.png</file>
+        <file>image/firmware_update5.png</file>
+        <file>image/firmware_update6.png</file>
+        <file>image/firmware_update7.png</file>
+        <file>image/updatefw.png</file>
     </qresource>
 </RCC>

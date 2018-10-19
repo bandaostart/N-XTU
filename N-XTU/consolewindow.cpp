@@ -16,6 +16,9 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) :
     //创建从显示区域
     Creat_SlaveDisAre();
 
+    //创建电流表显示区域
+    Creat_AmmeterAra();
+
     //创建记录显示区域
     Creat_RecordDisAre();
 
@@ -46,9 +49,15 @@ void ConsoleWindow::Creat_TopToolBar()
     Start_Action   = new QAction(QIcon(":/image/network_start.png"), tr("Start radio test"), this);
     Record_Action  = new QAction(QIcon(":/image/console_record_start.png"), tr("Start recording the console session"), this);
     Refresh_Action = new QAction(QIcon(":/image/read_settings.png"), tr("Refresh Test Text"), this);
+    UpdataFw_Action = new QAction(QIcon(":/image/updatefw.png"), tr("Updata the Radio Firmware Library"), this);
+    Top_Space       = new QWidget(this);
+    Top_Space->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
     Top_Tool_Bar->addAction(Start_Action);
     Top_Tool_Bar->addAction(Record_Action);
     Top_Tool_Bar->addAction(Refresh_Action);
+    Top_Tool_Bar->addWidget(Top_Space);
+    Top_Tool_Bar->addAction(UpdataFw_Action);
 
 
     connect(Start_Action, &QAction::triggered, this, &ConsoleWindow::Slot_StartStopTest_FromStartAction);
@@ -75,6 +84,8 @@ void ConsoleWindow::Creat_LeftToolBar()
     Master_Action   = new QAction(QIcon(":/image/xbee_digimesh_48.png"), tr("Master"), this);
     Connect_Action  = new QAction(QIcon(":/image/connect.png"), tr(""), this);
     Slave_Action    = new QAction(QIcon(":/image/xbee_digipoint_48.png"), tr("Slave"), this);
+//    Connect_Action_1= new QAction(QIcon(":/image//image/connect.png"), tr("Slave"), this);
+//    Ammeter_Action  = new QAction(QIcon(":/image/ssid_search7.png"), tr("Slave"), this);
 
     Left_Tool_Bar->addWidget(Space[0]);
     Left_Tool_Bar->addAction(Master_Action);
@@ -83,6 +94,10 @@ void ConsoleWindow::Creat_LeftToolBar()
     Left_Tool_Bar->addWidget(Space[2]);
     Left_Tool_Bar->addAction(Slave_Action);
     Left_Tool_Bar->addWidget(Space[3]);
+//    Left_Tool_Bar->addAction(Connect_Action_1);
+//    Left_Tool_Bar->addWidget(Space[4]);
+//    Left_Tool_Bar->addAction(Ammeter_Action);
+//    Left_Tool_Bar->addWidget(Space[5]);
 }
 
 
@@ -200,22 +215,44 @@ void ConsoleWindow::Creat_SlaveDisAre()
 }
 
 
+/*创建电流表显示区域-------------------------------------------------------------------------*/
+void ConsoleWindow::Creat_AmmeterAra()
+{
+//    font.setBold(true);
+//    font.setFamily(QString::fromUtf8("Arial"));
+//    font.setWeight(80);
+//    font.setPointSize(9);
+
+//    Ammeter_Group_Box = new QGroupBox(this);
+//    Ammeter_Group_Box->setFont(font);
+
+//    Ammeter_Group_Box->setTitle("COM?");
+}
+
+
 
 /*创建记录区域------------------------------------------------------------------------------*/
 void ConsoleWindow::Creat_RecordDisAre()
 {
-    Pixmap[0].load(":/image/xbee_loading1.png");
-    Pixmap[1].load(":/image/xbee_loading2.png");
-    Pixmap[2].load(":/image/xbee_loading3.png");
-    Pixmap[3].load(":/image/xbee_loading4.png");
-    Pixmap[4].load(":/image/xbee_loading5.png");
-    Pixmap[5].load(":/image/xbee_loading6.png");
-    Pixmap[6].load(":/image/xbee_loading7.png");
-    Pixmap[7].load(":/image/xbee_loading8.png");
-    Pixmap[8].load(":/image/xbee_loading9.png");
-    Pixmap[9].load(":/image/xbee_loading10.png");
-    Pixmap[10].load(":/image/xbee_loading10.png");
+    Record_Pixmap[0].load(":/image/xbee_loading1.png");
+    Record_Pixmap[1].load(":/image/xbee_loading2.png");
+    Record_Pixmap[2].load(":/image/xbee_loading3.png");
+    Record_Pixmap[3].load(":/image/xbee_loading4.png");
+    Record_Pixmap[4].load(":/image/xbee_loading5.png");
+    Record_Pixmap[5].load(":/image/xbee_loading6.png");
+    Record_Pixmap[6].load(":/image/xbee_loading7.png");
+    Record_Pixmap[7].load(":/image/xbee_loading8.png");
+    Record_Pixmap[8].load(":/image/xbee_loading9.png");
+    Record_Pixmap[9].load(":/image/xbee_loading10.png");
+    Record_Pixmap[10].load(":/image/xbee_loading10.png");
 
+    Updata_Pixmap[0].load(":/image/firmware_update1.png");
+    Updata_Pixmap[1].load(":/image/firmware_update2.png");
+    Updata_Pixmap[2].load(":/image/firmware_update3.png");
+    Updata_Pixmap[3].load(":/image/firmware_update4.png");
+    Updata_Pixmap[4].load(":/image/firmware_update5.png");
+    Updata_Pixmap[5].load(":/image/firmware_update6.png");
+    Updata_Pixmap[6].load(":/image/firmware_update7.png");
 
     Right_Group_Box   = new QGroupBox(this);
     Right_Group_Box->setMinimumWidth(350);
@@ -225,8 +262,30 @@ void ConsoleWindow::Creat_RecordDisAre()
 
 
     Record_Label =  new QLabel(Right_Group_Box);
-    Record_Label->setPixmap(Pixmap[0]);
+    Record_Label->setPixmap(Record_Pixmap[0]);
     Record_Label->setGeometry(0, 0, 64, 64);
+
+    Updata_Label = new QLabel(Right_Group_Box);
+    Updata_Label->setPixmap(Updata_Pixmap[3]);
+    Updata_Label->setGeometry(69, 0, 64, 64);
+
+
+    Ammeter_LCD =  new QLCDNumber(9, Right_Group_Box);
+    Ammeter_LCD->setGeometry(138, 20, 160, 42);
+    Ammeter_LCD->setFont(font);
+    Ammeter_LCD->setStyleSheet("QLCDNumber{border-width:0;border-style:outset;color:green}");
+    Ammeter_LCD->display("000.000.0");
+
+    font.setBold(true);
+    font.setFamily(QString::fromUtf8("幼圆"));
+    font.setWeight(25);
+    font.setPointSize(25);
+    Ammeter_Label = new QLabel(Right_Group_Box);
+    Ammeter_Label->setAlignment(Qt::AlignCenter);
+    Ammeter_Label->setFont(font);
+    Ammeter_Label->setText("mA");
+    Ammeter_Label->setStyleSheet("color:Green;");
+    Ammeter_Label->setGeometry(298, 24, 40, 40);
 
 
     Record_Text  = new QTextEdit(Right_Group_Box);
@@ -254,11 +313,19 @@ void ConsoleWindow::Creat_RecordDisAre()
 /*创建布局区域----------------------------------------------------------------------------*/
 void ConsoleWindow::Creat_Layout()
 {
+//    Grid_Layout      = new QGridLayout(this);
+//    Grid_Layout->addWidget(Top_Tool_Bar,  0, 0, 1, 3);
+//    Grid_Layout->addWidget(Left_Tool_Bar, 1, 0, 3, 1);
+//    Grid_Layout->addWidget(Top_Group_Box, 1, 1, 1, 1);
+//    Grid_Layout->addWidget(Bottom_Group_Box, 2, 1, 1, 1);
+//    Grid_Layout->addWidget(Ammeter_Group_Box,3, 1, 1, 1);
+//    Grid_Layout->addWidget(Right_Group_Box, 1, 2, 3, 1);
+
     Grid_Layout      = new QGridLayout(this);
     Grid_Layout->addWidget(Top_Tool_Bar,  0, 0, 1, 3);
     Grid_Layout->addWidget(Left_Tool_Bar, 1, 0, 2, 1);
     Grid_Layout->addWidget(Top_Group_Box, 1, 1, 1, 1);
-    Grid_Layout->addWidget(Bottom_Group_Box, 2 , 1, 1, 1);
+    Grid_Layout->addWidget(Bottom_Group_Box, 2, 1, 1, 1);
     Grid_Layout->addWidget(Right_Group_Box, 1, 2, 2, 1);
 }
 
@@ -317,9 +384,15 @@ void ConsoleWindow::Set_NamePixFlicker(int count, int state)
 /*设置Record_Label--------------------------------------------------------------------*/
 void ConsoleWindow::Set_RecordLabel(int count)
 {
-    Record_Label->setPixmap(Pixmap[count%11]);
+    Record_Label->setPixmap(Record_Pixmap[count%11]);
 }
 
+
+/*设置电流值显示-----------------------------------------------------------------------*/
+void ConsoleWindow::Set_AmmeterData(QString &str)
+{
+    Ammeter_LCD->display(str);
+}
 
 
 
@@ -383,6 +456,7 @@ void ConsoleWindow::Slot_RefreshText_FromRefreshAction()
             StatusText[i]->hide();
         }
     }
+    Ammeter_LCD->display("000.000.0");
 }
 
 
@@ -419,12 +493,20 @@ void ConsoleWindow::Slot_ModuleStateChange_FromMainWin(bool add_delete, QString 
         }
         else
         {
-            Bottom_Group_Box->setTitle(portname);
-            DP_Port = portname;
-            DP_State = true;
+            if (noidtype == "DP")
+            {
+                Bottom_Group_Box->setTitle(portname);
+                DP_Port = portname;
+                DP_State = true;
+            }
+            else
+            {
+                DA_Port  = portname;
+                DA_State = true;
+            }
         }
 
-        if (DM_State && DP_State)
+        if (DM_State && DP_State && DA_State)
         {
             Connect_Action->setIcon(QIcon(":/image/disconnect.png"));
         }
@@ -439,12 +521,20 @@ void ConsoleWindow::Slot_ModuleStateChange_FromMainWin(bool add_delete, QString 
         }
         else
         {
-            Bottom_Group_Box->setTitle("COM?");
-            DP_Port  = "COM?";
-            DP_State = false;
+            if (noidtype == "DP")
+            {
+                Bottom_Group_Box->setTitle("COM?");
+                DP_Port  = "COM?";
+                DP_State = false;
+            }
+            else
+            {
+                DA_Port  = "COM?";
+                DA_State = false;
+            }
         }
 
-        if (DM_State && DP_State)
+        if (DM_State && DP_State &&DA_State)
         {
 
         }
@@ -483,6 +573,15 @@ void ConsoleWindow::paintEvent(QPaintEvent *event)
     painter.drawRect(Top_Group_Box->x(), Top_Group_Box->y(), Top_Group_Box->width(), Top_Group_Box->height());
     painter.drawRect(Bottom_Group_Box->x(), Bottom_Group_Box->y(), Bottom_Group_Box->width(), Bottom_Group_Box->height());
     painter.drawRect(Right_Group_Box->x(), Right_Group_Box->y(), Right_Group_Box->width(), Right_Group_Box->height());
+
+    //电流背景
+    pen.setStyle(Qt::SolidLine);
+    pen.setColor(QColor(255,255,255));
+    brush.setColor(QColor(255,255,255));
+    brush.setStyle(Qt::SolidPattern);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.drawRect(Right_Group_Box->x()+Ammeter_LCD->x(), Right_Group_Box->y()+ Ammeter_LCD->y(), 200, Ammeter_LCD->height());
 
 
     //画连接线

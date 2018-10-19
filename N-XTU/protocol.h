@@ -553,6 +553,8 @@ typedef struct
 #define MODULE_CURRENT_SLEEP_FUN          0x07                                    //休眠电流测试
 #define MODULE_GPIO_FUN                   0x08                                    //GPIO测试
 #define MODULE_OSC_FUN                    0x09                                    //晶振测试
+#define MODULE_AMMETER_RX_FUN             0x11                                    //电流接收
+
 
 #define MODULE_TYPE_REQ_NUM               5
 #define MODULE_READ_ID_NUM                2

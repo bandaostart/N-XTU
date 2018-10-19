@@ -5,6 +5,7 @@
 #include <QToolBar>
 #include <QAction>
 #include <QLabel>
+#include <QLCDNumber>
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QMenu>
@@ -42,12 +43,14 @@ public:
     void Set_NamePix(int count, int state);
     void Set_RecordLabel(int count);
     void Set_NamePixFlicker(int count, int state);
+    void Set_AmmeterData(QString &str);
 
 private:
     void Creat_TopToolBar();
     void Creat_LeftToolBar();
     void Creat_MasterDisAre();
     void Creat_SlaveDisAre();
+    void Creat_AmmeterAra();
     void Creat_RecordDisAre();
     void Creat_Layout();
     void Init_Para();
@@ -65,6 +68,8 @@ public:
     QAction     *Start_Action;
     QAction     *Record_Action;
     QAction     *Refresh_Action;
+    QAction     *UpdataFw_Action;
+    QWidget     *Top_Space;
 
     QToolBar    *Left_Tool_Bar;
     QWidget     *Space[4];
@@ -72,6 +77,8 @@ public:
     QAction     *Master_Action;
     QAction     *Slave_Action;
     QAction     *Connect_Action;
+//    QAction     *Connect_Action_1;
+//    QAction     *Ammeter_Action;
 
     QGroupBox   *Top_Group_Box;
     QPixmap     NamePix_Pixmap[3];
@@ -83,23 +90,32 @@ public:
     QGridLayout *Top_Box_Layout;
 
     QGroupBox   *Bottom_Group_Box;
+//    QGroupBox   *Ammeter_Group_Box;
 
     QGroupBox   *Right_Group_Box;
-    QPixmap      Pixmap[11];
+    QPixmap      Record_Pixmap[11];
+    QPixmap      Updata_Pixmap[7];
     QLabel      *Record_Label;
+    QLabel      *Updata_Label;
+    QLCDNumber  *Ammeter_LCD;
+    QLabel      *Ammeter_Label;
     QMenu       *Record_Menu;
     QAction     *Record_Clear;
     QAction     *Record_SelectAll;
     QTextEdit   *Record_Text;
     QVBoxLayout *Right_Box_Layout;
 
+
     QGridLayout *Grid_Layout;
+
 
     QString      DM_Port;
     QString      DP_Port;
+    QString      DA_Port;
     bool         Testing_State;
     bool         DM_State;
     bool         DP_State;
+    bool         DA_State;
 
 };
 

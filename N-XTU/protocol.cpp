@@ -39,10 +39,12 @@ bool     AT_Com_RfTxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t 
 bool     AT_Com_RfRxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 
 void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+void     AT_Com_RxAmmeter(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 void     AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 uint8_t  AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, Rf_Rx_Tx_Para &rtx_para);
 void     AT_Com_RspRfTxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 void     AT_Com_RspRfRxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+
 
 
 /*AT请求指令-------------------------------------------------------------------------------------------------------------*/
@@ -211,122 +213,244 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
     QString             temp_str;
 
 
-     pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
-     length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
-     if ((rx_buf[0] != 0x7E) || (length >= 255))
+     if (((rx_buf[0] == '+') || (rx_buf[0] == '-')) && (rx_num == 17))
      {
-        return;
-     }
+         module_deal->serialtxrxPara->tx_count = 0x00;
+         module_deal->serialtxrxPara->tx_num= 0x00;
 
-     sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
-     if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+         module->Node_Type = "DA";
+         module->Text_Content[0] = "DA";
+         module->Text_Content[1] = "Agilent 34401A";
+         module->Text_Content[2] = "SCPI Talk Only ASCII";
+         module->Text_Content[4] = "000000000000001F";
+
+     }
+     else
      {
-         return;
+         pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+         length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+         if ((rx_buf[0] != 0x7E) || (length >= 255))
+         {
+            return;
+         }
+
+         sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+         if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+         {
+             return;
+         }
+
+
+        pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+        AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+        AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+        switch(AT_Command)
+        {
+            case VR:                                                 //节点类型
+            {
+                AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
+                for (int i=0; i<AT_Length; i++)
+                {
+                    temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
+                }
+
+                if (temp_str == "21A7")
+                {
+                    module->Node_Type = "DM";
+                    module->Text_Content[0] = "DM";
+                    module->Text_Content[2] = "NBee N3H Master ";
+                }
+                else
+                {
+                    module->Node_Type = "DP";
+                    module->Text_Content[0] = "DP";
+                    module->Text_Content[2] = "NBee N3H Slave ";
+                }
+                module_deal->serialtxrxPara->tx_count = 0x00;
+
+                break;
+            }
+
+            case NI:                                                 //节点标识
+            {
+                AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
+                for (int i=0; i<AT_Length; i++)
+                {
+                    temp_str += rx_buf[XbeeApi_ATCom_Rsp_len+i];
+                }
+
+                module->Text_Content[1] = temp_str;
+                module_deal->serialtxrxPara->tx_count = 0x00;
+
+                break;
+            }
+
+            case AP:                                                 //通信模式
+            {
+                AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
+
+                temp_str = QString::number(rx_buf[XbeeApi_ATCom_Rsp_len]);
+
+                if (temp_str == "1")
+                {
+                   module->Text_Content[2] += "API";
+                }
+                else
+                {
+                   module->Text_Content[2] += "AT";
+                }
+                module_deal->serialtxrxPara->tx_count = 0x00;
+
+                break;
+            }
+
+            case SH:                                                 //源64位地址高
+            {
+
+                AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
+                for (int i=0; i<AT_Length; i++)
+                {
+                    if(rx_buf[XbeeApi_ATCom_Rsp_len+i] < 16)
+                    {
+                        temp_str += "0";
+                    }
+                    temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
+                }
+
+
+                module->Text_Content[4] = temp_str;
+                module_deal->serialtxrxPara->tx_count = 0x00;
+
+                break;
+            }
+
+            case SL:                                                 //源64位地址低
+            {
+                AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
+                for (int i=0; i<AT_Length; i++)
+                {
+                    if(rx_buf[XbeeApi_ATCom_Rsp_len+i] < 16)
+                    {
+                        temp_str += "0";
+                    }
+                    temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
+                }
+                module->Text_Content[4] += temp_str;
+                module_deal->serialtxrxPara->tx_count = 0x00;
+
+                break;
+            }
+        }
      }
-
-
-    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
-    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
-    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
-
-    switch(AT_Command)
-    {
-        case VR:                                                 //节点类型
-        {
-            AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
-            for (int i=0; i<AT_Length; i++)
-            {
-                temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
-            }
-
-            if (temp_str == "21A7")
-            {
-                module->Node_Type = "DM";
-                module->Text_Content[0] = "DM";
-                module->Text_Content[2] = "NBee N3H Master ";
-            }
-            else
-            {
-                module->Node_Type = "DP";
-                module->Text_Content[0] = "DP";
-                module->Text_Content[2] = "NBee N3H Slave ";
-            }
-            module_deal->serialtxrxPara->tx_count = 0x00;
-
-            break;
-        }
-
-        case NI:                                                 //节点标识
-        {
-            AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
-            for (int i=0; i<AT_Length; i++)
-            {
-                temp_str += rx_buf[XbeeApi_ATCom_Rsp_len+i];
-            }
-
-            module->Text_Content[1] = temp_str;
-            module_deal->serialtxrxPara->tx_count = 0x00;
-
-            break;
-        }
-
-        case AP:                                                 //通信模式
-        {
-            AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
-
-            temp_str = QString::number(rx_buf[XbeeApi_ATCom_Rsp_len]);
-
-            if (temp_str == "1")
-            {
-               module->Text_Content[2] += "API";
-            }
-            else
-            {
-               module->Text_Content[2] += "AT";
-            }
-            module_deal->serialtxrxPara->tx_count = 0x00;
-
-            break;
-        }
-
-        case SH:                                                 //源64位地址高
-        {
-
-            AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
-            for (int i=0; i<AT_Length; i++)
-            {
-                if(rx_buf[XbeeApi_ATCom_Rsp_len+i] < 16)
-                {
-                    temp_str += "0";
-                }
-                temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
-            }
-
-
-            module->Text_Content[4] = temp_str;
-            module_deal->serialtxrxPara->tx_count = 0x00;
-
-            break;
-        }
-
-        case SL:                                                 //源64位地址低
-        {
-            AT_Length = (rx_num - XbeeApi_ATCom_Rsp_len - 1);
-            for (int i=0; i<AT_Length; i++)
-            {
-                if(rx_buf[XbeeApi_ATCom_Rsp_len+i] < 16)
-                {
-                    temp_str += "0";
-                }
-                temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
-            }
-            module->Text_Content[4] += temp_str;
-            module_deal->serialtxrxPara->tx_count = 0x00;
-
-            break;
-        }
-    }
 }
+
+
+void AT_Com_RxAmmeter(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+     if (((rx_buf[0] == '+') || (rx_buf[0] == '-')) && (rx_num == 17))
+     {
+         double   ammeter_data = 0;
+         uint32_t temp_Integer = 0, temp_decimal = 0, temp_index = 0;
+         uint32_t temp_data = 0;
+         int8_t  num = 0, data = 0;
+
+         module_deal->serialtxrxPara->tx_count = 0x00;
+         module_deal->serialtxrxPara->tx_num= 0x00;
+
+         /*********  +1.01700000E-07 ***************************/
+         //整数
+         num++;
+         for (; num<15; num++)
+         {
+             if (rx_buf[num] != '.')
+             {
+                temp_Integer *= 10;
+                temp_Integer += (rx_buf[num]-'0');
+             }
+             else
+             {
+                 break;
+             }
+         }
+
+
+         //小数
+         num++;
+         for (;num<15; num++)
+         {
+             if (rx_buf[num] != 'E')
+             {
+                temp_decimal *= 10;
+                temp_decimal += (rx_buf[num]-'0');
+             }
+             else
+             {
+                 break;
+             }
+         }
+
+         //指数
+         num += 2;
+         for (;num<15; num++)
+         {
+             if (rx_buf[num] != 'E')
+             {
+                temp_index *= 10;
+                temp_index += rx_buf[num]-'0';
+             }
+             else
+             {
+                 break;
+             }
+         }
+
+         ammeter_data = temp_decimal;
+         ammeter_data /= 100000000;
+         ammeter_data += temp_Integer;
+         for (num=0; num<temp_index; num++)
+         {
+             if (rx_buf[12] == '+')
+             {
+                 ammeter_data *= 10;
+             }
+             else
+             {
+                 ammeter_data /= 10;
+             }
+         }
+
+         //转变成mA
+         ammeter_data *= 1000;
+         module_deal->moduleWindow->Ammeter_Data = ammeter_data;
+
+         //转变成10*uA
+         temp_data = (uint32_t)(10000*ammeter_data);
+         module_deal->moduleWindow->Ammeter_Text = "";
+         data = (temp_data % 10000000)/1000000;
+         module_deal->moduleWindow->Ammeter_Text += QString::number(data);
+         data = (temp_data % 1000000)/100000;
+         module_deal->moduleWindow->Ammeter_Text += QString::number(data);
+         data = (temp_data % 100000/10000);
+         module_deal->moduleWindow->Ammeter_Text += QString::number(data);
+
+         module_deal->moduleWindow->Ammeter_Text += '.';
+
+         data = (temp_data % 10000)/1000;
+         module_deal->moduleWindow->Ammeter_Text += QString::number(data);
+         data = (temp_data % 1000)/100;
+         module_deal->moduleWindow->Ammeter_Text += QString::number(data);
+         data = (temp_data % 100)/10;
+         module_deal->moduleWindow->Ammeter_Text += QString::number(data);
+
+         module_deal->moduleWindow->Ammeter_Text += '.';
+
+
+         data = (temp_data % 10);
+         module_deal->moduleWindow->Ammeter_Text += QString::number(data);
+     }
+}
+
 
 
 void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)

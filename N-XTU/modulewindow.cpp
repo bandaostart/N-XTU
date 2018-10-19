@@ -122,7 +122,17 @@ void ModuleWindow::ModuleInfo_Set()
     }
     else
     {
-      Label->setPixmap(QPixmap(":/image/xbee_digipoint_64.png"));
+      if (Text_Content[0] == "DP")
+      {
+        Label->setPixmap(QPixmap(":/image/xbee_digipoint_64.png"));
+      }
+      else
+      {
+          if (Text_Content[0] == "DA")
+          {
+            Label->setPixmap(QPixmap(":/image/ssid_search7.png"));
+          }
+      }
     }
 
     Name_Text[0]->setText(Text_Content[1]);
