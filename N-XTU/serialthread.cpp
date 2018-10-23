@@ -116,14 +116,10 @@ void SerialThread::SerialTxData(const unsigned char *tx_data, unsigned short tx_
         tx_str += " Tx:";
         for (int i=0; i<Tx_Num; i++)
         {
-            if(Tx_Data[i] < 16)
-            {
-                tx_str += "0";
-            }
-            tx_str += QString::number(Tx_Data[i] & 0xFF, 16).toUpper();
+            tx_str += QString("%1").arg(Tx_Data[i], 2, 16, QLatin1Char('0')).toUpper();
             tx_str += " ";
         }
-        emit this->Communication_Text(tx_str);
+        emit this->Communication_Text(m_Serial_Port_Settings.portName, tx_str);
 
         mutex.unlock();
     }
@@ -144,7 +140,7 @@ void SerialThread::run()
                 QByteArray    rx_data;
                 unsigned char num = 0;
 
-                while (num <= 20)
+                while (num <= 30)
                 {
                     num++;
                     msleep(1);
@@ -165,14 +161,10 @@ void SerialThread::run()
                     rx_str += " Rx:";
                     for (int i=0; i<Rx_Num; i++)
                     {
-                        if(Rx_Data[i] < 16)
-                        {
-                            rx_str += "0";
-                        }
-                        rx_str += QString::number(Rx_Data[i] & 0xFF, 16).toUpper();
+                        rx_str += QString("%1").arg(Rx_Data[i], 2, 16, QLatin1Char('0')).toUpper();
                         rx_str += " ";
                     }
-                    emit this->Communication_Text(rx_str);
+                    emit this->Communication_Text(m_Serial_Port_Settings.portName, rx_str);
 
                     emit this->SerialRxData(m_Serial_Port_Settings.portName, Rx_Data, Rx_Num);
                 }

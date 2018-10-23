@@ -13,19 +13,38 @@
 uint8_t  Frame_ID = 0;
 
 //设备信息读取命令
-QVector<uint16_t> AT_TypeReq{VR, NI, AP, SH, SL};
+QVector<uint16_t> AT_TypeReq{VR, NI, AP, SH, SL, RI};
 
-//射频参数读取命令
-QVector<uint16_t> AT_ReadID{SH, SL};
+
+//射频参数读取
+QVector<uint16_t> AT_ReadID{RI, SH, SL};
+
 
 //射频发送命令测试
 QVector<uint16_t> AT_RfTx{TO, RT, TR};
 
+
 //射频发送电流测试
 QVector<uint16_t> AT_RfTxCurrent{CT};
 
+
 //射频发送电流测试
 QVector<uint16_t> AT_RfRxCurrent{CR};
+
+
+//GPIO测试
+QVector<uint16_t> AT_GPIO{IO};
+
+
+//晶振测试
+QVector<uint16_t>AT_OSC{CO};
+
+
+//休眠电流测试
+QVector<uint16_t>AT_SleepCurrent{CS};
+
+//射频状态初始化
+QVector<uint16_t>AT_RfStateInit{RI};
 
 
 
@@ -33,17 +52,28 @@ QVector<uint16_t> AT_RfRxCurrent{CR};
 
 uint8_t  XbeePro_CheckSum(uint8_t length, uint8_t *input);
 bool     AT_Com_ReqType(ModuleDeal *module_deal, uint8_t *tx_buf, uint16_t &tx_num);
+bool     AT_Com_RfInit(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 bool     AT_Com_ReadID(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 bool     AT_Com_RfTx(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 bool     AT_Com_RfTxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
 bool     AT_Com_RfRxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+bool     AT_Com_RfGPIO(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+bool     AT_Com_RfOSC(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+bool     AT_Com_RfSleepCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+bool     AT_Com_RfStateInit(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num);
+
 
 void     AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 void     AT_Com_RxAmmeter(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+void     AT_Com_RspRfInit(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 void     AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 uint8_t  AT_Com_RspRfTx(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num, Rf_Rx_Tx_Para &rtx_para);
 void     AT_Com_RspRfTxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 void     AT_Com_RspRfRxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+void     AT_Com_RspRfGPIO(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+void     AT_Com_RspRfOSC(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+void     AT_Com_RspRfSleepCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
+void     AT_Com_RspRfStateInit(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 
 
 
@@ -97,6 +127,7 @@ bool AT_Com_ReqType(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
         return false;
     }
 }
+
 
 
 /*获取模块ID------------------------------------------------------------------------------------------------------------*/
@@ -193,6 +224,106 @@ bool AT_Com_RfRxCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_
         return false;
     }
 }
+
+
+/*GPIO测试-----------------------------------------------------------------------------------------------------*/
+bool AT_Com_RfGPIO(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
+{
+    auto para = module_deal->serialtxrxPara;
+
+    if ((para->tx_num <= MODULE_GPIO_NUM) && (para->tx_num > 0))
+    {
+        tx_num = AT_Com_Req(AT_GPIO[MODULE_GPIO_NUM-para->tx_num], para->frame_id, tx_buf);
+
+        para->frame_id++;
+        para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
+
+        para->tx_num--;
+        para->search_count++;
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+/*晶振测试-----------------------------------------------------------------------------------------------------*/
+bool AT_Com_RfOSC(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
+{
+    auto para = module_deal->serialtxrxPara;
+
+    if ((para->tx_num <= MODULE_OSC_NUM) && (para->tx_num > 0))
+    {
+        tx_num = AT_Com_Req(AT_OSC[MODULE_OSC_NUM-para->tx_num], para->frame_id, tx_buf);
+
+        para->frame_id++;
+        para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
+
+        para->tx_num--;
+        para->search_count++;
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+/*休眠电流测试-----------------------------------------------------------------------------------------------------*/
+bool AT_Com_RfSleepCurrent(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
+{
+    auto para = module_deal->serialtxrxPara;
+
+    if ((para->tx_num <= MODULE_CURRENT_SLEEP_NUM) && (para->tx_num > 0))
+    {
+        tx_num = AT_Com_Req(AT_SleepCurrent[MODULE_CURRENT_SLEEP_NUM-para->tx_num], para->frame_id, tx_buf);
+
+        para->frame_id++;
+        para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
+
+        para->tx_num--;
+        para->search_count++;
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+
+/*射频状态初始化-----------------------------------------------------------------------------------------------------*/
+bool AT_Com_RfStateInit(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
+{
+    auto para = module_deal->serialtxrxPara;
+
+    if ((para->tx_num <= MODULE_RF_STATE_INIT_NUM) && (para->tx_num > 0))
+    {
+        tx_num = AT_Com_Req(AT_RfStateInit[MODULE_RF_STATE_INIT_NUM-para->tx_num], para->frame_id, tx_buf);
+
+        para->frame_id++;
+        para->frame_id = (para->frame_id) ? (para->frame_id) : (1);
+
+        para->tx_num--;
+        para->search_count++;
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+
 
 
 
@@ -341,6 +472,13 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 
                 break;
             }
+
+            case RI:                                                //射频初始化
+            {
+                module_deal->serialtxrxPara->tx_count = 0x00;
+
+                break;
+            }
         }
      }
 }
@@ -453,6 +591,8 @@ void AT_Com_RxAmmeter(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 
 
 
+
+
 void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 {
     uint8_t             sum = 0;
@@ -484,6 +624,13 @@ void AT_Com_RspID(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
 
     switch(AT_Command)
     {
+        case RI:                                                 //射频初始化
+        {
+            module_deal->serialtxrxPara->tx_count = 0x00;
+
+            break;
+        }
+
         case SH:                                                 //源64位地址高
         {
 
@@ -674,6 +821,155 @@ void  AT_Com_RspRfRxCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t r
 }
 
 
+void  AT_Com_RspRfGPIO(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+    uint8_t             sum = 0;
+    uint16_t            AT_Command = 0;
+    uint16_t            AT_Length  = 0, length = 0;
+    XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return;
+    }
+
+    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+    switch(AT_Command)
+    {
+        case IO:                                                //GPIO测试
+        {
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            break;
+        }
+    }
+}
+
+
+
+void  AT_Com_RspRfOSC(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+    uint8_t             sum = 0;
+    uint16_t            AT_Command = 0;
+    uint16_t            AT_Length  = 0, length = 0;
+    XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return;
+    }
+
+    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+    switch(AT_Command)
+    {
+        case CO:                                                //OSC测试
+        {
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            break;
+        }
+    }
+}
+
+
+
+void  AT_Com_RspRfSleepCurrent(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+    uint8_t             sum = 0;
+    uint16_t            AT_Command = 0;
+    uint16_t            AT_Length  = 0, length = 0;
+    XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return;
+    }
+
+    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+    switch(AT_Command)
+    {
+        case CS:                                                //休眠电流测试
+        {
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            break;
+        }
+    }
+}
+
+
+
+void  AT_Com_RspRfStateInit(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
+{
+    uint8_t             sum = 0;
+    uint16_t            AT_Command = 0;
+    uint16_t            AT_Length  = 0, length = 0;
+    XbeeApi_ATCom_Rsp_t *pXbeeApiAtComRsp;
+    XBeeApi_Header_t    *pXbeeApiHeader;
+
+    pXbeeApiHeader = (XBeeApi_Header_t *)rx_buf;
+    length = (pXbeeApiHeader->length_byte_msb << 8) + pXbeeApiHeader->length_byte_lsb;
+    if ((rx_buf[0] != 0x7E) || (length >= 255))
+    {
+       return;
+    }
+
+    sum = XbeePro_CheckSum(length, &rx_buf[XBeeApi_Header_Len-1]);
+    if (sum != rx_buf[XBeeApi_Header_Len+length-1])
+    {
+        return;
+    }
+
+    pXbeeApiAtComRsp  = (XbeeApi_ATCom_Rsp_t *)rx_buf;
+    AT_Length         = (pXbeeApiAtComRsp->xbeeapi_header.length_byte_msb << 8)+pXbeeApiAtComRsp->xbeeapi_header.length_byte_lsb;
+    AT_Command        = (pXbeeApiAtComRsp->at_command[0] << 8)+pXbeeApiAtComRsp->at_command[1];
+
+    switch(AT_Command)
+    {
+        case RI:                                                //射频状态初始化
+        {
+            module_deal->serialtxrxPara->tx_count = 0;
+
+            break;
+        }
+    }
+}
 
 
 

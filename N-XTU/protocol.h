@@ -123,6 +123,7 @@
 #define         CS                                      CONVERSION('C', 'S')    //休眠电流测试
 #define         IO                                      CONVERSION('I', 'O')    //GPIO测试
 #define         CO                                      CONVERSION('C', 'O')    //晶振测试
+#define         RI                                      CONVERSION('R', 'I')    //射频状态初始化
 
 #define         RR                                      CONVERSION('R', 'R')    //射频接收测试
 #define         RF                                      CONVERSION('R', 'F')    //接收测试完成
@@ -539,6 +540,10 @@ typedef struct
     int8_t      rssi;
     uint16_t    tx_num;
     uint16_t    rx_num;
+    double      tx_current;
+    double      rx_current;
+    double      sleep_current;
+    uint32_t    count;
 }Rf_Rx_Tx_Para;
 #pragma pack()
 
@@ -550,21 +555,23 @@ typedef struct
 #define MODULE_RF_RX_FUN                  0x04                                    //接收测试
 #define MODULE_CURRENT_TX_FUN             0x05                                    //发送电流测试
 #define MODULE_CURRENT_RX_FUN             0x06                                    //接收电流测试
-#define MODULE_CURRENT_SLEEP_FUN          0x07                                    //休眠电流测试
-#define MODULE_GPIO_FUN                   0x08                                    //GPIO测试
-#define MODULE_OSC_FUN                    0x09                                    //晶振测试
+#define MODULE_GPIO_FUN                   0x07                                    //GPIO测试
+#define MODULE_OSC_FUN                    0x08                                    //晶振测试
+#define MODULE_CURRENT_SLEEP_FUN          0x09                                    //休眠电流测试
+#define MODULE_RF_STATE_INIT_FUN          0x0A                                    //射频状态恢复初始化
 #define MODULE_AMMETER_RX_FUN             0x11                                    //电流接收
 
 
-#define MODULE_TYPE_REQ_NUM               5
-#define MODULE_READ_ID_NUM                2
+#define MODULE_TYPE_REQ_NUM               6
+#define MODULE_READ_ID_NUM                3
 #define MODULE_RF_TX_NUM                  3
 #define MODULE_RF_RX_NUM                  3
 #define MODULE_CURRENT_TX_NUM             1
 #define MODULE_CURRENT_RX_NUM             1
-#define MODULE_CURRENT_SLEEP_NUM          1
 #define MODULE_GPIO_NUM                   1
 #define MODULE_OSC_NUM                    1
+#define MODULE_CURRENT_SLEEP_NUM          1
+#define MODULE_RF_STATE_INIT_NUM          1
 
 
 #define MODULE_TYPE_REQ_INTERVAL          3000
@@ -573,9 +580,10 @@ typedef struct
 #define MODULE_RF_RX_INTERVAL             8000
 #define MODULE_CURRENT_TX_INTERVAL        3000
 #define MODULE_CURRENT_RX_INTERVAL        3000
-#define MODULE_CURRENT_SLEEP_INTERVAL     3000
 #define MODULE_GPIO_INTERVAL              3000
 #define MODULE_OSC_INTERVAL               3000
+#define MODULE_CURRENT_SLEEP_INTERVAL     3000
+#define MODULE_RF_STATE_INIT_INTERVAL     5000
 
 
 

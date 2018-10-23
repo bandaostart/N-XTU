@@ -36,7 +36,7 @@ public:
 
 signals:
     void SerialRxData(const QString &portname,  unsigned char *rx_data, unsigned short rx_num);
-    void Communication_Text(const QString &str);
+    void Communication_Text(const QString &portname, const QString &str);
 
 
 private:

@@ -35,7 +35,7 @@ public slots:
 
     void Slot_StartStopTest_FromStartAction();
     void Slot_RefreshText_FromRefreshAction();
-    void Slot_CommunicationDisplay_FromMainWin(const QString &str);
+    void Slot_CommunicationDisplay_FromMainWin(const QString &portname, const QString &str);
     void Slot_RecordMenuText_FromRecordText(QPoint);
 
 public:

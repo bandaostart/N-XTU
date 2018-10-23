@@ -129,6 +129,7 @@ void ConsoleWindow::Creat_MasterDisAre()
     NameLabel[6]->setText("GPIO:");
     NameLabel[7]->setText("Crystal Oscillator:");
 
+
     font.setWeight(40);
     for (int i=0; i<NumTestRow; i++)
     {
@@ -462,11 +463,18 @@ void ConsoleWindow::Slot_RefreshText_FromRefreshAction()
 
 
 /*通讯显示 槽函数----------------------------------------------------------------------*/
-void ConsoleWindow::Slot_CommunicationDisplay_FromMainWin(const QString &str)
+void ConsoleWindow::Slot_CommunicationDisplay_FromMainWin(const QString &portname,  const QString &str)
 {
-    Record_Text->insertPlainText(str);
-    Record_Text->insertPlainText("\n\n");
-    Record_Text->moveCursor(QTextCursor::End);
+    if (portname == DA_Port)
+    {
+
+    }
+    else
+    {
+        Record_Text->insertPlainText(str);
+        Record_Text->insertPlainText("\n\n");
+        Record_Text->moveCursor(QTextCursor::End);
+    }
 }
 
 

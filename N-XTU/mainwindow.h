@@ -11,6 +11,7 @@
 #include <QTimer>
 #include <QDebug>
 #include <QThread>
+#include <QAxObject>
 #include "leftwindow.h"
 #include "rightwindow.h"
 #include "serialdialog.h"
@@ -48,7 +49,7 @@ private:
     QTimer         *SerialTx_Timer;
     QTimer         *Test_Run_Timer;
 
-    enum {NullState = 0, ReadNodeID, RfTransmit, RfReceive, CurrentTransmit, CurrentReceive, CurrentSleep, GPIO, CrystalOsc};
+    enum {NullState = 0,  ReadNodeID, RfTransmit, RfReceive, CurrentTransmit, CurrentReceive, CurrentSleep, GPIO, CrystalOsc, StateInit};
     unsigned char  Test_Run_State;
     unsigned int   Test_Run_Num;
 

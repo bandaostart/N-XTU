@@ -79,8 +79,8 @@ static const uint qt_meta_data_ConsoleWindow[] = {
        6,    3,   51,    2, 0x0a /* Public */,
       10,    0,   58,    2, 0x0a /* Public */,
       11,    0,   59,    2, 0x0a /* Public */,
-      12,    1,   60,    2, 0x0a /* Public */,
-      14,    1,   63,    2, 0x0a /* Public */,
+      12,    2,   60,    2, 0x0a /* Public */,
+      14,    1,   65,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::Bool, QMetaType::QString, QMetaType::QString,    3,    4,    5,
@@ -89,7 +89,7 @@ static const uint qt_meta_data_ConsoleWindow[] = {
     QMetaType::Void, QMetaType::Bool, QMetaType::QString, QMetaType::QString,    7,    8,    9,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,   13,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,    8,   13,
     QMetaType::Void, QMetaType::QPoint,    2,
 
        0        // eod
@@ -105,7 +105,7 @@ void ConsoleWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
         case 1: _t->Slot_ModuleStateChange_FromMainWin((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3]))); break;
         case 2: _t->Slot_StartStopTest_FromStartAction(); break;
         case 3: _t->Slot_RefreshText_FromRefreshAction(); break;
-        case 4: _t->Slot_CommunicationDisplay_FromMainWin((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 4: _t->Slot_CommunicationDisplay_FromMainWin((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
         case 5: _t->Slot_RecordMenuText_FromRecordText((*reinterpret_cast< QPoint(*)>(_a[1]))); break;
         default: ;
         }
