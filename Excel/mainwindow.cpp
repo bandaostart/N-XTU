@@ -31,7 +31,7 @@ void MainWindow::on_pushButton_clicked()
     Excel->setControl("Excel.Application");
 
     //设置窗体是否显示 true: 显示 false：不显示
-    Excel->setProperty("Visible", true);
+    //Excel->setProperty("Visible", false);
 
     //不显示任何警告信息，如果为true 那么关闭的时候回出现“文件保存”等类似信息
     Excel->setProperty("DisplayAlerts", false);

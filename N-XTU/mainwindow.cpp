@@ -44,13 +44,18 @@ MainWindow::MainWindow(QWidget *parent)
     Set_WidgetAttributes();
 
 
+    //初始化EXCEL
+    Init_Excel();
+
+
     //初始化参数
     Init_Window_Para();
 }
 
 MainWindow::~MainWindow()
 {
-    delete Serial_Dialog;
+//    delete Serial_Dialog;
+//    delete Excel;
 }
 
 
@@ -176,6 +181,146 @@ void MainWindow::Set_WidgetAttributes()
 }
 
 
+/*初始化Excel---------------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Init_Excel()
+{
+    QDate       Current_Time;
+    QDir        Dir;
+    QFileInfo   FileInfo;
+    QString     WorkPath;
+    QAxObject   *Font;
+
+    /*---------------------------------------------------------------------------------*/
+    /*有时间的话使用开源代码   qtxlsx                                                      */
+    /*                                                                                 */
+    /*---------------------------------------------------------------------------------*/
+    //创建对象
+    Excel = new QAxObject(this);
+
+
+    //连接Excel控件
+    Excel->setControl("Excel.Application");
+
+
+    //设置窗体是否显示 true: 显示 false：不显示
+    Excel->setProperty("Visible", true);
+
+    //此处是无奈之举，当“Visible”设置为false时候，excel报错,只能把excel最小化
+    Excel->setProperty("WindowState", "xlMinimized");
+
+    //不显示任何警告信息，如果为true 那么关闭的时候回出现“文件保存”等类似信息
+    Excel->setProperty("DisplayAlerts", false);
+
+    //获取工作薄集合
+    WorkBooks = Excel->querySubObject("WorkBooks");
+
+    //获取当前时间
+    Current_Time = QDate::currentDate();
+    //获取工作路径
+    WorkPath = Dir.currentPath();
+    WorkPath +="/";
+    WorkPath += (QString("%1").arg(Current_Time.year(),  4, 10, QLatin1Char('0')).toUpper()+"-");
+    WorkPath += (QString("%1").arg(Current_Time.month(), 2, 10, QLatin1Char('0')).toUpper()+"-");
+    WorkPath += (QString("%1").arg(Current_Time.day(),   2, 10, QLatin1Char('0')).toUpper());
+    WorkPath += ".xlsx";
+
+    //打开工作薄 如果存在打开如果不存新建
+    FileInfo.setFile(WorkPath);
+    if (FileInfo.isFile())
+    {
+        //打开工作薄
+        WorkBook = WorkBooks->querySubObject("Open(const QString&)", WorkPath);
+
+        //获取所有的Sheets
+        WorkSheets = WorkBook->querySubObject("Sheets");
+
+        //获取第一个Sheet
+        WorkSheet = WorkSheets->querySubObject("Item(int)",1);
+    }
+    else
+    {
+        WorkBooks->dynamicCall("Add"); // 新建一个工作簿
+        WorkBook = Excel->querySubObject("ActiveWorkBook"); // 获取当前工作簿
+
+        //获取所有的Sheets
+        WorkSheets = WorkBook->querySubObject("Sheets");
+
+        //获取第一个Sheet
+        WorkSheet = WorkSheets->querySubObject("Item(int)",1);
+
+        //设置单元格标题
+        QAxObject *Cell;
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 1);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "STATUS");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 2);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "NOID_ID");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 3);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "TX_RSSI");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 4);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "TX_PER");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 5);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "RX_RSSI");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 6);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "RX_PER");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 7);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "TX_CURRENT");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 8);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "RX_CURRENT");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 9);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "SLEEP_CURRENT");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 10);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "GPIO");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 11);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "OSC");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 12);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "FAIL_BITS");
+        Cell = WorkSheet->querySubObject("Cells(int, int)", 1, 13);
+        Cell->dynamicCall("SetValue(conts QVariant&)", "TIME");
+
+        //设置自适应宽度
+        QAxObject *autoFitRange = WorkSheet->querySubObject("Columns(A:M)");
+        autoFitRange->dynamicCall("AutoFit");
+
+        //设置字体居中
+        autoFitRange->setProperty("HorizontalAlignment",-4108);
+
+        autoFitRange = WorkSheet->querySubObject("Rows(1)");
+        Font = autoFitRange->querySubObject("Font");
+        Font->setProperty("Bold", true);                             //设置单元格字体加粗
+
+        //保存文件
+        WorkBook->dynamicCall("SaveAs(const QString&)", QDir::toNativeSeparators(WorkPath));
+    }
+
+
+//    //读取Excel表格数据并显示
+//    QAxObject *UsedRange = WorkSheet->querySubObject("UsedRange");
+//    WorkRow              = UsedRange->querySubObject("Rows");
+//    WorkColumn           = UsedRange->querySubObject("Columns");
+//    StartRow             = UsedRange->property("Row").toInt();
+//    StartColumn          = UsedRange->property("Column").toInt();
+//    AllRowsNum           = WorkRow->property("Count").toInt();
+//    AllColumnsNum        = WorkRow->property("Count").toInt();
+//    for (unsigned int num=StartRow+1; num<=AllRowsNum; num++)
+//    {
+//        Cell_1 = WorkSheet->querySubObject("Cells(int, int)", num, 2);
+//        Cell_2 = WorkSheet->querySubObject("Cells(int, int)", num, 13);
+
+//        temp_str1 = Cell_1->dynamicCall("Value()").toString();
+//        temp_str2 = Cell_2->dynamicCall("Value()").toString();
+
+//        this->right_window->Console_Window->Set_ExcelNodeIdShow((num-1), temp_str1, temp_str2);
+//    }
+
+
+    //关闭文件
+    //WorkBook->dynamicCall("Close(Boolean)", false);     //关闭文件
+    //Excel->dynamicCall("Quit(void)");                   //关闭exce
+
+    //delete Excel;
+}
+
+
 /*初始化窗体参数--------------------------------------------------------------------------------------------------------------------*/
 void MainWindow::Init_Window_Para()
 {
@@ -187,7 +332,251 @@ void MainWindow::Init_Window_Para()
     DMP_RtxPara.rssi = 0;
     DMP_RtxPara.rx_num = 0;
     DMP_RtxPara.tx_num = 0;
+
+    setAttribute(Qt::WA_DeleteOnClose);
 }
+
+
+/*Excel 节点校准保存----------------------------------------------------------------------------------------------------------------*/
+void MainWindow::Excel_Node_Save(Excel_Save_Para &excel_save_para)
+{
+    QDateTime current_time;
+    QAxObject *Cell;
+    QAxObject* Font;
+    QString temp_id = "";
+    unsigned int  num = 0;
+
+
+    //获取Sheet范围,获取起始行，起始列，总行数，总列数
+    QAxObject *UsedRange = WorkSheet->querySubObject("UsedRange");
+    WorkRow              = UsedRange->querySubObject("Rows");
+    WorkColumn           = UsedRange->querySubObject("Columns");
+    StartRow             = UsedRange->property("Row").toInt();
+    StartColumn          = UsedRange->property("Column").toInt();
+    AllRowsNum           = WorkRow->property("Count").toInt();
+    AllColumnsNum        = WorkRow->property("Count").toInt();
+
+
+    //整体测试状态
+    if (excel_save_para.fail_bits == 0x0000)
+    {
+        excel_save_para.status      = true;
+        excel_save_para.status_str  = "PASS";
+        excel_save_para.fail_bits  |= ((0) << 0);
+    }
+    else
+    {
+        excel_save_para.status      = false;
+        excel_save_para.status_str      = "FAIL";
+        excel_save_para.fail_bits  |= ((1) << 0);
+    }
+    excel_save_para.fial_bits_str = "0x";
+    excel_save_para.fial_bits_str += QString("%1").arg(excel_save_para.fail_bits, 4, 16, QLatin1Char('0')).toUpper();
+
+
+    //写入时间
+    current_time = QDateTime::currentDateTime();
+    excel_save_para.time = current_time.toString("yyyy-MM-dd hh:mm:ss");
+
+
+    //Text Edit窗体显示
+    this->right_window->Console_Window->Set_ExcelNodeIdShow(excel_save_para.status_str, excel_save_para.noid_id, excel_save_para.time);
+    emit this->right_window->Console_Window->Start_Action->trigger();
+
+    //判断节点是否存在
+    for (num=StartRow+1; num<=AllRowsNum; num++)
+    {
+        Cell = WorkSheet->querySubObject("Cells(int, int)", num, 2);
+        temp_id = Cell->dynamicCall("Value()").toString();
+        if (temp_id == excel_save_para.noid_id)
+        {
+            break;
+        }
+    }
+
+
+    //添加节点
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 1);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 0)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.status_str);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 2);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 1)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.noid_id);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 3);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 2)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.tx_rssi);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 4);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 3)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->setProperty("NumberFormatLocal", "0.0%");
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.tx_per);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 5);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 4)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.rx_rssi);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 6);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 5)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->setProperty("NumberFormatLocal", "0.0%");
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.rx_per);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 7);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 6)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.tx_current);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 8);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 7)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.rx_current);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 9);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 8)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.sleep_current);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 10);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 9)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.gpio);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 11);
+    Font = Cell->querySubObject("Font");
+    if ((excel_save_para.fail_bits & (1 << 10)) != 0)
+    {
+        Font->setProperty("Color", QColor(255, 0, 0));
+    }
+    else
+    {
+        Font->setProperty("Color", QColor(0, 0, 0));
+    }
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.osc);
+
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 12);
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.fial_bits_str);
+
+
+    Cell = WorkSheet->querySubObject("Cells(int, int)", num, 13);
+    Cell->setProperty("NumberFormatLocal", "yyyy/mm/dd hh:mm:ss");
+    Cell->dynamicCall("SetValue(conts QVariant&)", excel_save_para.time);
+
+
+    //设置自适应宽度
+    QAxObject *autoFitRange = WorkSheet->querySubObject("Columns(A:M)");
+    autoFitRange->dynamicCall("AutoFit");
+
+    //设置字体居中
+    autoFitRange->setProperty("HorizontalAlignment",-4108);
+
+    //保存
+    WorkBook->dynamicCall("Save()");
+}
+
+
+
+
+
+
 
 
 /*Hash配置-------------------------------------------------------------------------------------------------------------------------*/
@@ -519,6 +908,7 @@ void MainWindow::Slot_TestRunTimer()
         case CurrentReceive:
         case CurrentSleep:
         case GPIO:
+        case CrystalOsc:
         {
             QString str = "";
             int num = (Test_Run_Num % 5);
@@ -550,6 +940,23 @@ void MainWindow::Slot_StartStopTest_FromConsoleWin(const bool &state, const QStr
         right_window->Console_Window->Set_StatusText(0, 1);
 
         this->Hash_Set_Deal(DM_PortName, MODULE_READ_ID_FUN, 0);
+
+
+        Excel_SavePara.status          = false;
+        Excel_SavePara.fail_bits       = 0x0000;
+        Excel_SavePara.status_str      = "";
+        Excel_SavePara.noid_id         = "";
+        Excel_SavePara.tx_rssi         = "";
+        Excel_SavePara.tx_per          = "";
+        Excel_SavePara.rx_rssi         = "";
+        Excel_SavePara.rx_per          = "";
+        Excel_SavePara.tx_current      = "";
+        Excel_SavePara.rx_current      = "";
+        Excel_SavePara.sleep_current   = "";
+        Excel_SavePara.gpio            = "";
+        Excel_SavePara.osc             = "";
+        Excel_SavePara.fial_bits_str   = "";
+        Excel_SavePara.time            = "";
     }
     else
     {
@@ -888,6 +1295,11 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                         this->Hash_Set_Deal(DP_PortName, MODULE_RF_TX_FUN, 0);
 
+
+                        //excel para: node_id
+                        Excel_SavePara.noid_id     = module_deal->moduleWindow->Text_Content[4];
+                        Excel_SavePara.fail_bits  |= ((0) << 1);
+
                         return true;
                     }
                     else
@@ -938,10 +1350,10 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                             str += "  PER:";
                             float rx_count = DMP_RtxPara.rx_num, tx_count = DMP_RtxPara.tx_num;
-                            float per;
-                            per = rx_count/tx_count;
-                            per *= 100;
-                            str += QString("%1").arg(per,0,'f',1);
+
+                            DMP_RtxPara.per = rx_count/tx_count;
+                            DMP_RtxPara.per *= 100;
+                            str += QString("%1").arg(DMP_RtxPara.per, 0, 'f',1);
                             str += "%";
 
                             str += "  TX:";
@@ -958,6 +1370,15 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                         this->Hash_Set_Deal(DP_PortName, MODULE_RF_RX_FUN, 0);
                         this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 1);
+
+
+                        //excel para: tx_rssi tx_per
+                        Excel_SavePara.tx_rssi     = QString::number(DMP_RtxPara.rssi);
+                        Excel_SavePara.fail_bits  |= ((0) << 2);
+
+                        Excel_SavePara.tx_per      = QString::number(DMP_RtxPara.per);
+                        Excel_SavePara.tx_per     += "%";
+                        Excel_SavePara.fail_bits  |= ((0) << 3);
 
                         return true;
                     }
@@ -1010,10 +1431,10 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                             str += "  PER:";
                             float rx_count = DMP_RtxPara.rx_num, tx_count = DMP_RtxPara.tx_num;
-                            float per;
-                            per = rx_count/tx_count;
-                            per *= 100;
-                            str += QString("%1").arg(per,0,'f',1);
+
+                            DMP_RtxPara.per = rx_count/tx_count;
+                            DMP_RtxPara.per *= 100;
+                            str += QString("%1").arg(DMP_RtxPara.per,0,'f',1);
                             str += "%";
 
                             str += "  TX:";
@@ -1029,6 +1450,16 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         DMP_RtxPara.count = 0;
                         this->Hash_Set_Deal(DM_PortName, MODULE_CURRENT_TX_FUN, 0);
                         this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+
+                        //excel para: rx_rssi rx_per
+                        Excel_SavePara.rx_rssi     = QString::number(DMP_RtxPara.rssi);
+                        Excel_SavePara.fail_bits  |= ((0) << 4);
+
+                        Excel_SavePara.rx_per      = QString::number(DMP_RtxPara.per);
+                        Excel_SavePara.rx_per     += "%";
+                        Excel_SavePara.fail_bits  |= ((0) << 5);
+
 
                         return true;
                     }
@@ -1087,6 +1518,10 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                             DMP_RtxPara.count = 0;
                             this->Hash_Set_Deal(DM_PortName, MODULE_CURRENT_RX_FUN, 0);
                             this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+                            //excel para: tx_current
+                            Excel_SavePara.tx_current  = str;
+                            Excel_SavePara.fail_bits  |= ((0) << 6);
                         }
 
                         return true;
@@ -1145,6 +1580,10 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                             DMP_RtxPara.count = 0;
                             this->Hash_Set_Deal(DM_PortName, MODULE_CURRENT_SLEEP_FUN, 0);
                             this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+                            //excel para: rx_current
+                            Excel_SavePara.rx_current  = str;
+                            Excel_SavePara.fail_bits  |= ((0) << 7);
                         }
 
                         return true;
@@ -1203,6 +1642,11 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                             //下一步进行接收测试
                             this->Hash_Set_Deal(DM_PortName, MODULE_RF_STATE_INIT_FUN, 0);
                             this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+
+                            //excel para: sleep_current
+                            Excel_SavePara.sleep_current  = str;
+                            Excel_SavePara.fail_bits  |= ((0) << 8);
                         }
 
                         return true;
@@ -1302,6 +1746,10 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         this->Hash_Set_Deal(DM_PortName, MODULE_OSC_FUN, 0);
                         this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
+                        //excel para: gpio
+                        Excel_SavePara.gpio  = "OK";
+                        Excel_SavePara.fail_bits  |= ((0) << 9);
+
                         return true;
                     }
                     else
@@ -1345,13 +1793,21 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         right_window->Console_Window->Set_NamePix(7, 1);
                         Test_Run_State = NullState;
                         right_window->Console_Window->Set_StatusText(7, 2);
-
                         right_window->Console_Window->NameText[7]->setText("OK");
+
 
                         //下一步进行接收测试
                         DMP_RtxPara.count = 0;
                         this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
                         this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+
+
+                        //excel para: osc
+                        Excel_SavePara.osc  = "OK";
+                        Excel_SavePara.fail_bits  |= ((0) << 10);
+                        //写入excel表格
+                        Excel_Node_Save(Excel_SavePara);
+
 
                         return true;
                     }
@@ -1436,6 +1892,14 @@ void MainWindow::paintEvent(QPaintEvent *event)
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event);
+
+    delete Serial_Dialog;
+
+    //excel关闭
+//    WorkBook->dynamicCall("Save()");
+    WorkBook->dynamicCall("Close(Boolean)", false);     //关闭文件
+    Excel->dynamicCall("Quit(void)");                   //关闭exce
+    delete Excel;
 
     exit(0);
 }

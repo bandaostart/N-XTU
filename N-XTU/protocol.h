@@ -543,8 +543,30 @@ typedef struct
     double      tx_current;
     double      rx_current;
     double      sleep_current;
+    float       per;
     uint32_t    count;
 }Rf_Rx_Tx_Para;
+
+typedef struct
+{
+    bool        status;
+    uint16_t    fail_bits;
+    QString     status_str;
+    QString     noid_id;
+    QString     tx_rssi;
+    QString     tx_per;
+    QString     rx_rssi;
+    QString     rx_per;
+    QString     tx_current;
+    QString     rx_current;
+    QString     sleep_current;
+    QString     gpio;
+    QString     osc;
+    QString     fial_bits_str;
+    QString     time;
+}Excel_Save_Para;
+
+
 #pragma pack()
 
 

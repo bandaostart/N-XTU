@@ -45,6 +45,8 @@ public:
     void Set_NamePixFlicker(int count, int state);
     void Set_AmmeterData(QString &str);
 
+    void Set_ExcelNodeIdShow(const QString &status, const QString &node_id, const QString &time);
+
 private:
     void Creat_TopToolBar();
     void Creat_LeftToolBar();
@@ -89,7 +91,9 @@ public:
     QLabel      *StatusText[NumTestRow];
     QGridLayout *Top_Box_Layout;
 
+    QTextEdit   *NodeId_Text;
     QGroupBox   *Bottom_Group_Box;
+    QVBoxLayout *Bottom_Box_Layout;
 //    QGroupBox   *Ammeter_Group_Box;
 
     QGroupBox   *Right_Group_Box;

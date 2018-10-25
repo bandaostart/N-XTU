@@ -12,6 +12,10 @@
 #include <QDebug>
 #include <QThread>
 #include <QAxObject>
+#include <QDir>
+#include <QFileInfo>
+#include <QDate>
+#include <QDateTime>
 #include "leftwindow.h"
 #include "rightwindow.h"
 #include "serialdialog.h"
@@ -53,10 +57,24 @@ private:
     unsigned char  Test_Run_State;
     unsigned int   Test_Run_Num;
 
-    QString        DMPA_PortName;
-    QString        DM_PortName;
-    QString        DP_PortName;
-    Rf_Rx_Tx_Para  DMP_RtxPara;
+    QString         DMPA_PortName;
+    QString         DM_PortName;
+    QString         DP_PortName;
+    Rf_Rx_Tx_Para   DMP_RtxPara;
+    Excel_Save_Para Excel_SavePara;
+
+
+    QAxObject    *Excel;
+    QAxObject    *WorkBooks;
+    QAxObject    *WorkBook;
+    QAxObject    *WorkSheets;
+    QAxObject    *WorkSheet;
+    QAxObject    *WorkRow;
+    QAxObject    *WorkColumn;
+    unsigned int StartRow;
+    unsigned int StartColumn;
+    unsigned int AllRowsNum;
+    unsigned int AllColumnsNum;
 
 
 private:
@@ -68,6 +86,7 @@ private:
     void Creat_CentralWidget();
     void Creat_User_Timer();
     void Set_WidgetAttributes();
+    void Init_Excel();
     void Init_Window_Para();
     void Open_Serial_Deal();
 
@@ -75,6 +94,8 @@ private:
     void Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
 
     void Hash_Set_Deal(QString portname, uint8_t type_fun, uint8_t type_para);
+
+    void Excel_Node_Save(Excel_Save_Para &excel_save_para);
 
 
 private slots:

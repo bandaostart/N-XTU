@@ -208,11 +208,25 @@ void ConsoleWindow::Creat_SlaveDisAre()
     font.setWeight(80);
     font.setPointSize(9);
 
+    //创建group box
     Bottom_Group_Box = new QGroupBox(this);
     //Bottom_Group_Box->setStyleSheet("QGroupBox{border-width:0;border-style:outset}");
     Bottom_Group_Box->setFont(font);
-
     Bottom_Group_Box->setTitle("COM?");
+
+    //创建ID显示Edit
+    font.setPointSize(10);
+    NodeId_Text  = new QTextEdit(Bottom_Group_Box);
+    NodeId_Text->setGeometry(0, 0, 100, 100);
+    NodeId_Text->setFont(font);
+
+    //设置右键菜单
+    NodeId_Text->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    //创建布局
+    Bottom_Box_Layout =  new QVBoxLayout(Bottom_Group_Box);
+    Bottom_Box_Layout->addWidget(NodeId_Text);
+
 }
 
 
@@ -288,7 +302,7 @@ void ConsoleWindow::Creat_RecordDisAre()
     Ammeter_Label->setStyleSheet("color:Green;");
     Ammeter_Label->setGeometry(298, 24, 40, 40);
 
-
+    //创建并添加鼠标右键
     Record_Text  = new QTextEdit(Right_Group_Box);
     Record_Text->setGeometry(5, 64, 100, 100);
     Record_Text->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -328,6 +342,11 @@ void ConsoleWindow::Creat_Layout()
     Grid_Layout->addWidget(Top_Group_Box, 1, 1, 1, 1);
     Grid_Layout->addWidget(Bottom_Group_Box, 2, 1, 1, 1);
     Grid_Layout->addWidget(Right_Group_Box, 1, 2, 2, 1);
+
+    //设置伸展性
+    Grid_Layout->setRowStretch(1, 2);
+    Grid_Layout->setRowStretch(2, 2);
+    //Grid_Layout->setColumnStretch();
 }
 
 
@@ -427,6 +446,7 @@ void ConsoleWindow::Slot_StartStopTest_FromStartAction()
                 StatusText[i]->hide();
             }
         }
+        NodeId_Text->clear();
 
 
 
@@ -458,6 +478,7 @@ void ConsoleWindow::Slot_RefreshText_FromRefreshAction()
         }
     }
     Ammeter_LCD->display("000.000.0");
+    NodeId_Text->clear();
 }
 
 
@@ -476,6 +497,25 @@ void ConsoleWindow::Slot_CommunicationDisplay_FromMainWin(const QString &portnam
         Record_Text->moveCursor(QTextCursor::End);
     }
 }
+
+
+
+/*Excel表格中节点ID显示--------------------------------------------------------------------------------*/
+void ConsoleWindow::Set_ExcelNodeIdShow(const QString &status, const QString &node_id, const QString &time)
+{
+    QString str;
+
+    str = status;
+    str += ": ";
+    str += node_id;
+    str += "  (";
+    str += time;
+    str += ")";
+    NodeId_Text->setText(str);
+}
+
+
+
 
 
 
