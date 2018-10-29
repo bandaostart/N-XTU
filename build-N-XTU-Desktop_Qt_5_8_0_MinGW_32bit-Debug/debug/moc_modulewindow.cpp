@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_ModuleWindow_t {
-    QByteArrayData data[5];
-    char stringdata0[64];
+    QByteArrayData data[7];
+    char stringdata0[93];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,11 +35,14 @@ QT_MOC_LITERAL(0, 0, 12), // "ModuleWindow"
 QT_MOC_LITERAL(1, 13, 21), // "Signal_ModuleWinClose"
 QT_MOC_LITERAL(2, 35, 0), // ""
 QT_MOC_LITERAL(3, 36, 8), // "portname"
-QT_MOC_LITERAL(4, 45, 18) // "ModuleWindow_Close"
+QT_MOC_LITERAL(4, 45, 17), // "Signal_MousePress"
+QT_MOC_LITERAL(5, 63, 10), // "moduletype"
+QT_MOC_LITERAL(6, 74, 18) // "ModuleWindow_Close"
 
     },
     "ModuleWindow\0Signal_ModuleWinClose\0\0"
-    "portname\0ModuleWindow_Close"
+    "portname\0Signal_MousePress\0moduletype\0"
+    "ModuleWindow_Close"
 };
 #undef QT_MOC_LITERAL
 
@@ -49,21 +52,23 @@ static const uint qt_meta_data_ModuleWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       1,       // signalCount
+       2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   24,    2, 0x06 /* Public */,
+       1,    1,   29,    2, 0x06 /* Public */,
+       4,    2,   32,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       4,    0,   27,    2, 0x08 /* Private */,
+       6,    0,   37,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QString,    3,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,    3,    5,
 
  // slots: parameters
     QMetaType::Void,
@@ -78,7 +83,8 @@ void ModuleWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->Signal_ModuleWinClose((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 1: _t->ModuleWindow_Close(); break;
+        case 1: _t->Signal_MousePress((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 2: _t->ModuleWindow_Close(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -88,6 +94,13 @@ void ModuleWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
             typedef void (ModuleWindow::*_t)(const QString & );
             if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&ModuleWindow::Signal_ModuleWinClose)) {
                 *result = 0;
+                return;
+            }
+        }
+        {
+            typedef void (ModuleWindow::*_t)(const QString & , const QString & );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&ModuleWindow::Signal_MousePress)) {
+                *result = 1;
                 return;
             }
         }
@@ -119,13 +132,13 @@ int ModuleWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 3)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }
@@ -135,6 +148,13 @@ void ModuleWindow::Signal_ModuleWinClose(const QString & _t1)
 {
     void *_a[] = { Q_NULLPTR, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
+}
+
+// SIGNAL 1
+void ModuleWindow::Signal_MousePress(const QString & _t1, const QString & _t2)
+{
+    void *_a[] = { Q_NULLPTR, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
+    QMetaObject::activate(this, &staticMetaObject, 1, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

@@ -47,20 +47,21 @@ void ConsoleWindow::Creat_TopToolBar()
     Top_Tool_Bar->setStyleSheet("QToolBar{border-style:outset}");
 
     Start_Action   = new QAction(QIcon(":/image/network_start.png"), tr("Start radio test"), this);
-    Record_Action  = new QAction(QIcon(":/image/console_record_start.png"), tr("Start recording the console session"), this);
+    Config_Action  = new QAction(QIcon(":/image/preferences.png"), tr("Start recording the console session"), this);
     Refresh_Action = new QAction(QIcon(":/image/read_settings.png"), tr("Refresh Test Text"), this);
     UpdataFw_Action = new QAction(QIcon(":/image/updatefw.png"), tr("Updata the Radio Firmware Library"), this);
     Top_Space       = new QWidget(this);
     Top_Space->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     Top_Tool_Bar->addAction(Start_Action);
-    Top_Tool_Bar->addAction(Record_Action);
+    Top_Tool_Bar->addAction(Config_Action);
     Top_Tool_Bar->addAction(Refresh_Action);
     Top_Tool_Bar->addWidget(Top_Space);
     Top_Tool_Bar->addAction(UpdataFw_Action);
 
 
     connect(Start_Action, &QAction::triggered, this, &ConsoleWindow::Slot_StartStopTest_FromStartAction);
+    connect(Config_Action, QAction::triggered, this, &ConsoleWindow::Slot_ParaConfig_FromConfigAction);
     connect(Refresh_Action, &QAction::triggered, this, &ConsoleWindow::Slot_RefreshText_FromRefreshAction);
 }
 
@@ -428,33 +429,73 @@ void ConsoleWindow::Slot_StartStopTest_FromStartAction()
     {
         Testing_State = false;
         Start_Action->setIcon(QIcon(":/image/network_start.png"));
+
+        Config_Action->setEnabled(true);
+        Refresh_Action->setEnabled(true);
+
+        emit this->Signal_StartStopTest_ToMainWin(Testing_State, DM_Port, DP_Port);
     }
     else
     {
-        for (int i=0; i<NumTestRow; i++)
+        if (DM_State && DP_State &&DA_State)
         {
-            NameText[i]->setText("");
-            NamePix[i]->setPixmap(NamePix_Pixmap[0]);
+            for (int i=0; i<NumTestRow; i++)
+            {
+                NameText[i]->setText("");
+                NamePix[i]->setPixmap(NamePix_Pixmap[0]);
 
-            if (i == 0)
-            {
-                StatusText[i]->show();
-                StatusText[i]->setText(StatusText_Str[0]);
+                if (i == 0)
+                {
+                    StatusText[i]->show();
+                    StatusText[i]->setText(StatusText_Str[0]);
+                }
+                else
+                {
+                    StatusText[i]->hide();
+                }
             }
-            else
-            {
-                StatusText[i]->hide();
-            }
+            NodeId_Text->clear();
+
+            Testing_State = true;
+            Start_Action->setIcon(QIcon(":/image/network_stop.png"));
+
+            Config_Action->setEnabled(false);
+            Refresh_Action->setEnabled(false);
+
+            emit this->Signal_StartStopTest_ToMainWin(Testing_State, DM_Port, DP_Port);
         }
-        NodeId_Text->clear();
+        else
+        {
+            QString str = "";
 
+            if (!DM_State)
+            {
+                str = "\r\nNo \"NBee N3H Master\" Found                                                      ";
+            }
 
+            if (!DP_State)
+            {
+                str += "\r\nNo \"NBee N3H Slave\" Found                                                  ";
+            }
 
-        Testing_State = true;
-        Start_Action->setIcon(QIcon(":/image/network_stop.png"));
+            if (!DA_State)
+            {
+                str += "\r\nNo \"Agilent 34401A\" Found                                                  ";
+            }
+
+            QMessageBox::critical(NULL, "Error discovering device", str, QMessageBox::Ok);
+        }
     }
 
-    emit this->Signal_StartStopTest_ToMainWin(Testing_State, DM_Port, DP_Port);
+
+}
+
+
+
+/*配置测试参数 槽函数------------------------------------------------------------------*/
+void ConsoleWindow::Slot_ParaConfig_FromConfigAction()
+{
+    Para_Dialog.show();
 }
 
 

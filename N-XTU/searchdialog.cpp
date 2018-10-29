@@ -47,7 +47,7 @@ SearchDialog::SearchDialog(QWidget *parent) :QDialog(parent)
     this->setFixedSize(465, 110);
     this->setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
     this->setWindowTitle("Discovering radio modules");
-    this->setWindowModality(Qt::NonModal);
+    this->setWindowModality(Qt::ApplicationModal);
 
     connect(this, &SearchDialog::Signal_DialogClose, this, &SearchDialog::Slot_Dialog_Close);
 }

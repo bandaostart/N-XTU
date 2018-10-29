@@ -572,6 +572,7 @@ typedef struct
 
 #define MODULE_REQ_NULL                   0xFF                                    //无命令发送
 #define MODULE_TYPE_REQ_FUN               0x01                                    //设备信息类型请求
+#define MODULE_TYPE_REQ_REF_FUN           0x11                                    //设备状态重新读取请求
 #define MODULE_READ_ID_FUN                0x02                                    //读取ID
 #define MODULE_RF_TX_FUN                  0x03                                    //发送测试
 #define MODULE_RF_RX_FUN                  0x04                                    //接收测试
@@ -581,7 +582,7 @@ typedef struct
 #define MODULE_OSC_FUN                    0x08                                    //晶振测试
 #define MODULE_CURRENT_SLEEP_FUN          0x09                                    //休眠电流测试
 #define MODULE_RF_STATE_INIT_FUN          0x0A                                    //射频状态恢复初始化
-#define MODULE_AMMETER_RX_FUN             0x11                                    //电流接收
+#define MODULE_AMMETER_RX_FUN             0x0B                                    //电流接收
 
 
 #define MODULE_TYPE_REQ_NUM               6

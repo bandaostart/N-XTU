@@ -23,10 +23,12 @@ public:
     explicit ModuleWindow(QVector<QString> &text, QWidget *parent = 0);
     ~ModuleWindow();
     void         ModuleInfo_Set();
+    void         ModuleInfo_Clear();
 
 
 signals:
    void          Signal_ModuleWinClose(const QString &portname);
+   void          Signal_MousePress(const QString &portname, const QString &moduletype);
 
 
 private slots:
@@ -37,10 +39,11 @@ private:
     void         Creat_ToolBar();
     void         Creat_Layout();
 
-    void paintEvent(QPaintEvent *event)     override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void enterEvent(QEvent *event)          override;
-    void leaveEvent(QEvent *event)          override;
+    void paintEvent(QPaintEvent *event)         override;
+    void mouseMoveEvent(QMouseEvent *event)     override;
+    void enterEvent(QEvent *event)              override;
+    void leaveEvent(QEvent *event)              override;
+    void mousePressEvent(QMouseEvent *event)    override;
 
 private:
     QLabel       *Label;

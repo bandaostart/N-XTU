@@ -143,6 +143,17 @@ void ModuleWindow::ModuleInfo_Set()
 
 
 
+/*窗体信息清空-----------------------------------------------------------------------------------------------------*/
+void ModuleWindow::ModuleInfo_Clear()
+{
+    Name_Text[0]->setText("");
+    Name_Text[1]->setText("");
+    Name_Text[2]->setText(Text_Content[3]);
+    Name_Text[3]->setText("");
+}
+
+
+
 /*窗口关闭------------------------------------------------------------------------------------------------------------*/
 void ModuleWindow::ModuleWindow_Close()
 {
@@ -239,3 +250,18 @@ void ModuleWindow::mouseMoveEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
 }
+
+
+/*鼠标单击事件重写------------------------------------------------------------------------------------------------*/
+void ModuleWindow::mousePressEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        emit this->Signal_MousePress(Name_Text[2]->text(), Node_Type);
+    }
+}
+
+
+
+
+

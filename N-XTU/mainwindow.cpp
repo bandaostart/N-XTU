@@ -103,14 +103,33 @@ void MainWindow::Creat_ToolBar()
 {
     QAction *Add_Action      = new QAction(QIcon(":/image/add.png"), tr("Add Radio Module"), this);
     QAction *Search_Action   = new QAction(QIcon(":/image/search.png"), tr("Discover Radio Modules"), this);
-
+    QWidget *Space1           = new QWidget(this);
+    Space1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QAction *Config_Action   = new QAction(QIcon(":/image/config_perspective_selected.png"), tr("Updata working mode"), this);
+    QWidget *Space2           = new QWidget(this);
+    Space2->setMinimumWidth(20);
+    Space2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    QAction *Console_Action   = new QAction(QIcon(":/image/console_perspective_selected.png"), tr("Console working mode"), this);
+    QWidget *Space3           = new QWidget(this);
+    Space3->setMinimumWidth(20);
+    Space3->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    QAction *Network_Action   = new QAction(QIcon(":/image/network_perspective_selected.png"), tr("Network working mode"), this);
+    QWidget *Space4           = new QWidget(this);
+    Space4->setMinimumWidth(20);
+    Space4->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     Tool_Bar = new QToolBar(this);
     Tool_Bar->setStyleSheet("QToolBar{border-style:outset}");
     Tool_Bar->setMovable(false);
     Tool_Bar->setIconSize(QSize(48,48));
     Tool_Bar->addAction(Add_Action);
     Tool_Bar->addAction(Search_Action);
-
+    Tool_Bar->addWidget(Space1);
+    Tool_Bar->addAction(Console_Action);
+    Tool_Bar->addWidget(Space2);
+    Tool_Bar->addAction(Config_Action);
+    Tool_Bar->addWidget(Space3);
+    Tool_Bar->addAction(Network_Action);
+    Tool_Bar->addWidget(Space4);
 
     connect(Add_Action, &QAction::triggered, this, &MainWindow::Open_SerialDialog);
     this->addToolBar(Tool_Bar);
@@ -139,7 +158,7 @@ void MainWindow::Creat_CentralWidget()
     right_window->setMinimumWidth(250);
     connect(this, &MainWindow::Signal_ModuleStateChange_ToConsoleWin, right_window->Console_Window, &ConsoleWindow::Slot_ModuleStateChange_FromMainWin);
     connect(right_window->Console_Window, &ConsoleWindow::Signal_StartStopTest_ToMainWin, this, &MainWindow::Slot_StartStopTest_FromConsoleWin);
-
+    connect(&right_window->Console_Window->Para_Dialog, &ParaConfigDialog::Signal_Para_ToManWin, this, &MainWindow::Slot_Para_FromParaDlg);
 
     //定义分割器
     splitter = new QSplitter(Qt::Horizontal, this);
@@ -332,6 +351,8 @@ void MainWindow::Init_Window_Para()
     DMP_RtxPara.rssi = 0;
     DMP_RtxPara.rx_num = 0;
     DMP_RtxPara.tx_num = 0;
+
+    right_window->Console_Window->Para_Dialog.Read_Para(ParaDataMin, ParaDataMax, NumParaRow);
 
     setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -626,6 +647,24 @@ void MainWindow::Hash_Set_Deal(QString portname, uint8_t type_fun, uint8_t type_
                     break;
                 }
 
+                case MODULE_TYPE_REQ_REF_FUN:
+                {
+                    temp_serialtxrxPara->rx_func_type       = MODULE_TYPE_REQ_REF_FUN;
+                    temp_serialtxrxPara->tx_func_type       = MODULE_TYPE_REQ_REF_FUN;
+                    if (type_para == 0)
+                    {
+                        temp_serialtxrxPara->frame_id           = 0x01;
+                        temp_serialtxrxPara->tx_num             = MODULE_TYPE_REQ_NUM;
+                        temp_serialtxrxPara->tx_interval        = MODULE_TYPE_REQ_INTERVAL;
+                        temp_serialtxrxPara->tx_count           = 0x00;
+                        temp_serialtxrxPara->search_count       = 0x00;
+                        temp_serialtxrxPara->search_total_count = MODULE_TYPE_REQ_NUM;
+                        temp_serialtxrxPara->search_total_flag  = 0x00;
+                    }
+
+                    break;
+                }
+
                 case MODULE_READ_ID_FUN:
                 {
                     temp_serialtxrxPara->rx_func_type       = MODULE_READ_ID_FUN;
@@ -854,16 +893,47 @@ void MainWindow::Send_SerialMessage()
 void MainWindow::Close_ModuleWindow(const QString &portname)
 {
     emit this->Signal_ModuleStateChange_ToConsoleWin(false, Module_Deal_Hash.value(portname)->moduleWindow->Text_Content[3], Module_Deal_Hash.value(portname)->moduleWindow->Node_Type);
-
     disconnect(Module_Deal_Hash.value(portname)->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Slot_CommunicationDisplay_FromMainWin);
 
+
     Module_Deal_Hash.value(portname)->serialThread->SerialClose();
+
+    disconnect(Module_Deal_Hash.value(portname)->moduleWindow, &ModuleWindow::Signal_ModuleWinClose, this, Close_ModuleWindow);
+    disconnect(Module_Deal_Hash.value(portname)->moduleWindow, &ModuleWindow::Signal_MousePress, this, MousePress_ModuleWindow);
 
     delete Module_Deal_Hash.value(portname)->serialThread;
     delete Module_Deal_Hash.value(portname)->serialtxrxPara;
 
     Module_Deal_Hash.remove(portname);
 }
+
+
+/*模块对话框鼠标单击事件相应处理 槽函数-------------------------------------------------------------------------*/
+void MainWindow::MousePress_ModuleWindow(const QString &portname, const QString &moduletype)
+{
+    if (moduletype != "DA")
+    {
+        if ((Module_Deal_Hash.value(portname)->serialtxrxPara->rx_func_type == MODULE_REQ_NULL) &&
+            (Module_Deal_Hash.value(portname)->serialtxrxPara->tx_func_type == MODULE_REQ_NULL))
+        {
+            DMPA_PortName = portname;
+
+            Module_Deal_Hash.value(portname)->moduleWindow->ModuleInfo_Clear();
+
+            //请求模块相关信息
+            this->Hash_Set_Deal(portname, MODULE_TYPE_REQ_REF_FUN, 0);
+
+            //显示搜索对话框
+            search_dialog.Port_Name = portname;
+            search_dialog.show();
+        }
+    }
+}
+
+
+
+
+
 
 
 
@@ -923,6 +993,16 @@ void MainWindow::Slot_TestRunTimer()
     }
 }
 
+
+/*参数获取 槽函数----------------------------------------------------------------------------------------------*/
+void MainWindow::Slot_Para_FromParaDlg(const float *paradatamin, const float *paradatamax, int num)
+{
+    for (int i=0; i<num; i++)
+    {
+        ParaDataMin[i] = paradatamin[i];
+        ParaDataMax[i] = paradatamax[i];
+    }
+}
 
 
 /*射频测试处理 槽函数-------------------------------------------------------------------------------------------*/
@@ -1003,6 +1083,7 @@ void MainWindow::Open_Serial_Deal()
         Module_Deal->moduleWindow->Text_Content[4] = "";
 
         connect(Module_Deal->moduleWindow, &ModuleWindow::Signal_ModuleWinClose, this, Close_ModuleWindow);
+        connect(Module_Deal->moduleWindow, &ModuleWindow::Signal_MousePress, this, MousePress_ModuleWindow);
 
 
         //模块串口线程创建
@@ -1070,6 +1151,10 @@ void MainWindow::Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uin
     switch (para->rx_func_type)
     {
         case MODULE_TYPE_REQ_FUN:
+            AT_Com_RspType(module_deal, rx_buf, rx_num);
+        break;
+
+        case MODULE_TYPE_REQ_REF_FUN:
             AT_Com_RspType(module_deal, rx_buf, rx_num);
         break;
 
@@ -1243,10 +1328,15 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         //等待应答超时，关闭串口从Qhash中删除
                         disconnect(module_deal->serialThread, &SerialThread::Communication_Text, right_window->Console_Window, &ConsoleWindow::Slot_CommunicationDisplay_FromMainWin);
                         module_deal->serialThread->SerialClose();
+                        disconnect(module_deal->moduleWindow, &ModuleWindow::Signal_ModuleWinClose, this, Close_ModuleWindow);
+                        disconnect(module_deal->moduleWindow, &ModuleWindow::Signal_MousePress, this, MousePress_ModuleWindow);
+
                         delete module_deal->moduleWindow;
                         delete module_deal->serialThread;
                         delete module_deal->serialtxrxPara;
                         Module_Deal_Hash.remove(Serial_Dialog->Serial_Port_Settings.portName);
+
+                        this->Hash_Set_Deal(DMPA_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1256,6 +1346,57 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                 break;
             }
 
+            //模块类型数据更新
+            case MODULE_TYPE_REQ_REF_FUN:
+            {
+                if (module_deal->serialtxrxPara->tx_count == 0)
+                {
+                    if (module_deal->serialtxrxPara->tx_num == 0)
+                    {
+                        //关闭搜索显示对话框
+                        emit search_dialog.Signal_DialogClose();
+
+                        this->Hash_Set_Deal(DMPA_PortName, MODULE_REQ_NULL, 0);
+
+                        //设置module模块参数
+                        module_deal->moduleWindow->ModuleInfo_Set();
+
+                        return true;
+                    }
+                    else
+                    {
+                        //设置搜索对话框进度条变动
+                        search_dialog.Set_SearchDisplay(module_deal->serialtxrxPara->search_count, module_deal->serialtxrxPara->search_total_count);
+
+                        //发送请求命令
+                        AT_Com_ReqType(module_deal, tx_buf, tx_num);
+                        module_deal->serialThread->SerialTxData(tx_buf, tx_num);
+                    }
+                }
+                else
+                {
+                    if ((module_deal->serialtxrxPara->tx_count > module_deal->serialtxrxPara->tx_interval)
+                         || (module_deal->serialtxrxPara->search_total_flag == 0x01))
+                    {
+                        if (module_deal->serialtxrxPara->search_total_flag == 0x00)
+                        {
+                            //发送搜索对话框关闭消息
+                            emit search_dialog.Signal_DialogClose();
+
+                            //告警提示
+                            QMessageBox::critical(NULL, "Error discovering device",
+                                                  module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
+                        }
+
+                        this->Hash_Set_Deal(DMPA_PortName, MODULE_REQ_NULL, 0);
+
+                        return false;
+                    }
+                }
+                module_deal->serialtxrxPara->tx_count++;
+
+                break;
+            }
 
 
             //电流表电流接收处理
@@ -1321,7 +1462,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+
                         return false;
                     }
                 }
@@ -1339,7 +1482,6 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                     if (module_deal->serialtxrxPara->tx_num == 0)
                     {
                         //console window相关设置
-                        right_window->Console_Window->Set_NamePix(1, 1);
                         Test_Run_State = RfReceive;
                         right_window->Console_Window->Set_StatusText(2, 1);
 
@@ -1374,11 +1516,36 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                         //excel para: tx_rssi tx_per
                         Excel_SavePara.tx_rssi     = QString::number(DMP_RtxPara.rssi);
-                        Excel_SavePara.fail_bits  |= ((0) << 2);
+                        if ((DMP_RtxPara.rssi > ParaDataMax[1]) || (DMP_RtxPara.rssi < ParaDataMin[1]))
+                        {  
+                            Excel_SavePara.fail_bits  |= ((1) << 2);
+                        }
+                        else
+                        {
+                            Excel_SavePara.fail_bits  |= ((0) << 2);
+                        }
+
 
                         Excel_SavePara.tx_per      = QString::number(DMP_RtxPara.per);
                         Excel_SavePara.tx_per     += "%";
-                        Excel_SavePara.fail_bits  |= ((0) << 3);
+                        if ((DMP_RtxPara.per < ParaDataMin[0]))
+                        {
+                            Excel_SavePara.fail_bits  |= ((1) << 3);
+                        }
+                        else
+                        {
+                            Excel_SavePara.fail_bits  |= ((0) << 3);
+                        }
+
+                        if ((Excel_SavePara.fail_bits & ((1) << 2)) || (Excel_SavePara.fail_bits & ((1) << 3)))
+                        {
+                            right_window->Console_Window->Set_NamePix(1, 2);
+                        }
+                        else
+                        {
+                            right_window->Console_Window->Set_NamePix(1, 1);
+                        }
+
 
                         return true;
                     }
@@ -1401,8 +1568,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1420,7 +1588,6 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                     if (module_deal->serialtxrxPara->tx_num == 0)
                     {
                         //console window相关设置
-                        right_window->Console_Window->Set_NamePix(2, 1);
                         Test_Run_State = CurrentTransmit;
                         right_window->Console_Window->Set_StatusText(3, 1);
 
@@ -1454,12 +1621,34 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                         //excel para: rx_rssi rx_per
                         Excel_SavePara.rx_rssi     = QString::number(DMP_RtxPara.rssi);
-                        Excel_SavePara.fail_bits  |= ((0) << 4);
+                        if ((DMP_RtxPara.rssi > ParaDataMax[3]) || (DMP_RtxPara.rssi < ParaDataMin[3]))
+                        {
+                            Excel_SavePara.fail_bits  |= ((1) << 4);
+                        }
+                        else
+                        {
+                            Excel_SavePara.fail_bits  |= ((0) << 4);
+                        }
 
                         Excel_SavePara.rx_per      = QString::number(DMP_RtxPara.per);
                         Excel_SavePara.rx_per     += "%";
-                        Excel_SavePara.fail_bits  |= ((0) << 5);
+                        if ((DMP_RtxPara.per < ParaDataMin[2]))
+                        {
+                            Excel_SavePara.fail_bits  |= ((1) << 5);
+                        }
+                        else
+                        {
+                            Excel_SavePara.fail_bits  |= ((0) << 5);
+                        }
 
+                        if ((Excel_SavePara.fail_bits & ((1) << 4)) || (Excel_SavePara.fail_bits & ((1) << 5)))
+                        {
+                            right_window->Console_Window->Set_NamePix(2, 2);
+                        }
+                        else
+                        {
+                            right_window->Console_Window->Set_NamePix(2, 1);
+                        }
 
                         return true;
                     }
@@ -1482,8 +1671,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1504,7 +1694,6 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         if (DMP_RtxPara.count >= 8)
                         {
                             //console window相关设置
-                            right_window->Console_Window->Set_NamePix(3, 1);
                             Test_Run_State = CurrentReceive;
                             right_window->Console_Window->Set_StatusText(4, 1);
 
@@ -1521,7 +1710,16 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                             //excel para: tx_current
                             Excel_SavePara.tx_current  = str;
-                            Excel_SavePara.fail_bits  |= ((0) << 6);
+                            if ((DMP_RtxPara.tx_current > ParaDataMax[4]) || (DMP_RtxPara.tx_current < ParaDataMin[4]))
+                            {
+                                Excel_SavePara.fail_bits  |= ((1) << 6);
+                                right_window->Console_Window->Set_NamePix(3, 2);
+                            }
+                            else
+                            {
+                                Excel_SavePara.fail_bits  |= ((0) << 6);
+                                right_window->Console_Window->Set_NamePix(3, 1);
+                            }
                         }
 
                         return true;
@@ -1545,8 +1743,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1566,7 +1765,6 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         if (DMP_RtxPara.count >= 5)
                         {
                             //console window相关设置
-                            right_window->Console_Window->Set_NamePix(4, 1);
                             Test_Run_State = CurrentSleep;
                             right_window->Console_Window->Set_StatusText(5, 1);
 
@@ -1583,7 +1781,16 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                             //excel para: rx_current
                             Excel_SavePara.rx_current  = str;
-                            Excel_SavePara.fail_bits  |= ((0) << 7);
+                            if ((DMP_RtxPara.rx_current > ParaDataMax[5]) || (DMP_RtxPara.rx_current < ParaDataMin[5]))
+                            {
+                                Excel_SavePara.fail_bits  |= ((1) << 7);
+                                right_window->Console_Window->Set_NamePix(4, 2);
+                            }
+                            else
+                            {
+                                Excel_SavePara.fail_bits  |= ((0) << 7);
+                                right_window->Console_Window->Set_NamePix(4, 1);
+                            }
                         }
 
                         return true;
@@ -1607,8 +1814,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1629,7 +1837,6 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                         if (DMP_RtxPara.count >= 5)
                         {
                             //console window相关设置
-                            right_window->Console_Window->Set_NamePix(5, 1);
                             Test_Run_State = GPIO;
                             right_window->Console_Window->Set_StatusText(6, 1);
 
@@ -1646,7 +1853,16 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
 
                             //excel para: sleep_current
                             Excel_SavePara.sleep_current  = str;
-                            Excel_SavePara.fail_bits  |= ((0) << 8);
+                            if ((DMP_RtxPara.sleep_current > ParaDataMax[6]) || (DMP_RtxPara.sleep_current < ParaDataMin[6]))
+                            {
+                                Excel_SavePara.fail_bits  |= ((1) << 8);
+                                right_window->Console_Window->Set_NamePix(5, 2);
+                            }
+                            else
+                            {
+                                Excel_SavePara.fail_bits  |= ((0) << 8);
+                                right_window->Console_Window->Set_NamePix(5, 1);
+                            }
                         }
 
                         return true;
@@ -1670,8 +1886,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1717,8 +1934,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1771,8 +1989,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }
@@ -1830,8 +2049,9 @@ bool MainWindow::Port_Send_Deal(ModuleDeal *module_deal)
                                                   module_deal->moduleWindow->Text_Content[3]+" > Read Module Failed: Module not valid                           ", QMessageBox::Ok);
                         }
 
-                        this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
-                        this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
+                        emit this->right_window->Console_Window->Start_Action->trigger();
+                        //this->Hash_Set_Deal(DM_PortName, MODULE_REQ_NULL, 0);
+                        //this->Hash_Set_Deal(DP_PortName, MODULE_REQ_NULL, 0);
 
                         return false;
                     }

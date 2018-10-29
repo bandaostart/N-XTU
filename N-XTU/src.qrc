@@ -67,5 +67,10 @@
         <file>image/firmware_update6.png</file>
         <file>image/firmware_update7.png</file>
         <file>image/updatefw.png</file>
+        <file>image/config_perspective_selected.png</file>
+        <file>image/tools_header_frames_generator.png</file>
+        <file>image/info.png</file>
+        <file>image/console_perspective_selected.png</file>
+        <file>image/network_perspective_selected.png</file>
     </qresource>
 </RCC>

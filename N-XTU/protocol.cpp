@@ -130,6 +130,8 @@ bool AT_Com_ReqType(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
 
 
 
+
+
 /*获取模块ID------------------------------------------------------------------------------------------------------------*/
 bool AT_Com_ReadID(ModuleDeal *module_deal,  uint8_t *tx_buf, uint16_t &tx_num)
 {

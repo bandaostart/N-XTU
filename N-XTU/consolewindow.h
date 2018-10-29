@@ -14,6 +14,8 @@
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QDebug>
+#include <QMessageBox>
+#include "paraconfigdialog.h"
 
 
 class ConsoleWindow : public QWidget
@@ -35,6 +37,7 @@ public slots:
 
     void Slot_StartStopTest_FromStartAction();
     void Slot_RefreshText_FromRefreshAction();
+    void Slot_ParaConfig_FromConfigAction();
     void Slot_CommunicationDisplay_FromMainWin(const QString &portname, const QString &str);
     void Slot_RecordMenuText_FromRecordText(QPoint);
 
@@ -64,11 +67,13 @@ private:
 public:
     enum {NumTestRow = 8};
 
+    ParaConfigDialog Para_Dialog;
+
     QFont font;
 
     QToolBar    *Top_Tool_Bar;
     QAction     *Start_Action;
-    QAction     *Record_Action;
+    QAction     *Config_Action;
     QAction     *Refresh_Action;
     QAction     *UpdataFw_Action;
     QWidget     *Top_Space;

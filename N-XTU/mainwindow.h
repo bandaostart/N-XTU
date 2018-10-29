@@ -23,6 +23,7 @@
 #include "modulewindow.h"
 #include "protocol.h"
 #include "searchdialog.h"
+#include "paraconfigdialog.h"
 
 
 
@@ -76,6 +77,10 @@ private:
     unsigned int AllRowsNum;
     unsigned int AllColumnsNum;
 
+     enum {NumParaRow = 7};
+    float       ParaDataMin[NumParaRow];
+    float       ParaDataMax[NumParaRow];
+
 
 private:
     void paintEvent(QPaintEvent *event) override;
@@ -101,12 +106,15 @@ private:
 private slots:
     void Open_SerialDialog();
     void Close_ModuleWindow(const QString &portname);
+    void MousePress_ModuleWindow(const QString &portname, const QString &moduletype);
     void Receive_SerialMessage(const QString &portname,  unsigned char *rx_data,  unsigned short rx_num);
     void Send_SerialMessage();
     void Close_SearchDialog(const QString &portname);
     void Slot_TestRunTimer();
 
     void Slot_StartStopTest_FromConsoleWin(const bool &state, const QString &dmport, const QString &dpport);
+
+    void Slot_Para_FromParaDlg(const float *paradatamin, const float *paradatamax, int num);
 
     void Application_Exit();
 
