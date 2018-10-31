@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     modulewindow.cpp \
     protocol.cpp \
     searchdialog.cpp \
-    paraconfigdialog.cpp
+    paraconfigdialog.cpp \
+    updatawindow.cpp
 
 HEADERS  += mainwindow.h \
     serialthread.h \
@@ -44,7 +45,8 @@ HEADERS  += mainwindow.h \
     modulewindow.h \
     protocol.h \
     searchdialog.h \
-    paraconfigdialog.h
+    paraconfigdialog.h \
+    updatawindow.h
 
 RESOURCES += \
     src.qrc

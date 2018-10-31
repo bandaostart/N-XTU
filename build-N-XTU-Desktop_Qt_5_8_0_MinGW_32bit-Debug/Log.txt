@@ -1,0 +1,156 @@
+D:/CODE/EFR32MG/A11_BOOT/app/builder/A11_BOOT/A11_BOOT/Debug/Exe/A11_BOOT_efr32.bin
+D:/CODE/EFR32MG/A11_N3H_DETECT/app/mcu_example/A11_DETECT/build/exe/A11_DETECT.bin
+C:\Program Files\SEGGER\JLink_V612\JFlash.exe
+h\Flash.csv] ...
+ - List of flash devices read successfully (451 Devices)
+Reading MCU device list ...
+ - List of MCU devices read successfully (6249 Devices)
+Opening project file [C:\Program Files\SEGGER\JLink_V612\Samples\JFlash\ProjectFiles\EFR32MG1P232F256GM48.jflash] ...
+ - Project opened successfully
+Connecting ...
+ - Connecting via USB to J-Link device 0
+ - Target interface speed: 4000 kHz (Fixed)
+ - VTarget = 3.330V
+ - Initializing CPU core (Init sequence) ...
+    - Initialized successfully
+ - Target interface speed: 4000 kHz (Fixed)
+ - Connected successfully
+Erasing chip ...
+ - 130 sectors, 3 ranges, 0x0 - 0x3FFFF, 0xFE00000 - 0xFE007FF, 0xFE04000 - 0xFE047FF
+ - Start of preparing flash programming
+ - End of preparing flash programming
+ - Start of determining dirty areas in flash cache
+ - End of determining dirty areas
+ - CPU speed could not be measured.
+ - Chip erase not supported for flash bank @ 0x00000000. Switched to sector erase
+ - Start of determining dirty areas in flash cache
+ - End of determining dirty areas
+ - Start of erasing sectors
+ - Erasing range 0x00000000 - 0x00003FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00004000 - 0x00007FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00008000 - 0x0000BFFF (008 Sectors, 16 KB)
+ - Erasing range 0x0000C000 - 0x0000FFFF (008 Sectors, 16 KB)
+ - Erasing range 0x00010000 - 0x00013FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00014000 - 0x00017FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00018000 - 0x0001BFFF (008 Sectors, 16 KB)
+ - Erasing range 0x0001C000 - 0x0001FFFF (008 Sectors, 16 KB)
+ - Erasing range 0x00020000 - 0x00023FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00024000 - 0x00027FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00028000 - 0x0002BFFF (008 Sectors, 16 KB)
+ - Erasing range 0x0002C000 - 0x0002FFFF (008 Sectors, 16 KB)
+ - Erasing range 0x00030000 - 0x00033FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00034000 - 0x00037FFF (008 Sectors, 16 KB)
+ - Erasing range 0x00038000 - 0x0003BFFF (008 Sectors, 16 KB)
+ - Erasing range 0x0003C000 - 0x0003FFFF (008 Sectors, 16 KB)
+ - Erasing range 0x0FE00000 - 0x0FE007FF (001 Sector, 2 KB)
+ - Erasing range 0x0FE04000 - 0x0FE047FF (001 Sector, 2 KB)
+ - End of erasing sectors
+ - Start of restoring
+ - End of restoring
+ - Erase operation completed successfully - Completed after 3.634 sec
+Erasing selected sectors ...
+ - 130 of 130 sectors selected, 3 ranges, 0x0 - 0x3FFFF, 0xFE00000 - 0xFE007FF, 0xFE04000 - 0xFE047FF
+ - Start of preparing flash programming
+ - End of preparing flash programming
+ - Start of determining dirty areas in flash cache
+ - End of determining dirty areas
+ - CPU speed could not be measured.
+ - Start of erasing sectors
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - End of erasing sectors
+ - Start of restoring
+ - End of restoring
+ - Erase operation completed successfully - Completed after 0.246 sec
+Opening data file [D:/CODE/EFR32MG/A11_BOOT/app/builder/A11_BOOT/A11_BOOT/Debug/Exe/A11_BOOT_efr32.bin] ...
+ - Data file opened successfully (3058 bytes, 1 range, CRC of data = 0x4ADEA1BB)
+Checking if selected data fits into selected flash sectors.
+Programming and verifying target (3058 bytes, 1 range) ...
+ - Start of preparing flash programming
+ - End of preparing flash programming
+ - Start of determining dirty areas in flash cache
+ - End of determining dirty areas
+ - CPU speed could not be measured.
+ - Start of erasing sectors
+ - Start of blank checking
+ - End of blank checking
+ - End of erasing sectors
+ - Start of flash programming
+ - Programming range 0x00000000 - 0x00000FFF (002 Sectors, 4 KB)
+ - End of flash programming
+ - Flash programming performed for 1 range (4096 bytes)
+ - 0x0000 - 0x0FFF (002 Sectors, 4 KB)
+ - Start of verifying flash
+ - End of verifying flash
+ - Start of restoring
+ - End of restoring
+ - Target programmed and verified successfully (CRC = 0x70BBCF97) - Completed after 0.131 sec
+Opening data file [D:/CODE/EFR32MG/A11_N3H_DETECT/app/mcu_example/A11_DETECT/build/exe/A11_DETECT.bin] ...
+ - Data file opened successfully (33468 bytes, 1 range, CRC of data = 0x436AE5E6)
+Checking if selected data fits into selected flash sectors.
+Programming and verifying target (33468 bytes, 1 range) ...
+ - Start of preparing flash programming
+ - End of preparing flash programming
+ - Start of determining dirty areas in flash cache
+ - End of determining dirty areas
+ - CPU speed could not be measured.
+ - Start of erasing sectors
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - Start of blank checking
+ - End of blank checking
+ - End of erasing sectors
+ - Start of flash programming
+ - Programming range 0x00032000 - 0x00039FFF (016 Sectors, 32 KB)
+ - Programming range 0x0003A000 - 0x0003A7FF (001 Sector, 2 KB)
+ - End of flash programming
+ - Flash programming performed for 1 range (34816 bytes)
+ - 0x32000 - 0x3A7FF (017 Sectors, 34 KB)
+ - Start of verifying flash
+ - End of verifying flash
+ - Start of restoring
+ - End of restoring
+ - Target programmed and verified successfully (CRC = 0x6137663A) - Completed after 0.388 sec
+Starting application ...
+ - Disconnecting ...
+    - Disconnected
+ - Connecting via USB to J-Link device 0
+ - Target application started
+Close project
+ - Project closed

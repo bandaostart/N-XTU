@@ -10,6 +10,7 @@ INPUT(
 ./debug\protocol.o
 ./debug\searchdialog.o
 ./debug\paraconfigdialog.o
+./debug\updatawindow.o
 ./debug\qrc_src.o
 ./debug\moc_mainwindow.o
 ./debug\moc_serialthread.o
@@ -20,4 +21,5 @@ INPUT(
 ./debug\moc_modulewindow.o
 ./debug\moc_searchdialog.o
 ./debug\moc_paraconfigdialog.o
+./debug\moc_updatawindow.o
 );

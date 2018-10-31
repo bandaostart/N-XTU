@@ -44,10 +44,6 @@ MainWindow::MainWindow(QWidget *parent)
     Set_WidgetAttributes();
 
 
-    //初始化EXCEL
-    Init_Excel();
-
-
     //初始化参数
     Init_Window_Para();
 }
@@ -101,22 +97,25 @@ void MainWindow::Creat_MenuBar()
 /*创建工具栏----------------------------------------------------------------------------------------------------*/
 void MainWindow::Creat_ToolBar()
 {
-    QAction *Add_Action      = new QAction(QIcon(":/image/add.png"), tr("Add Radio Module"), this);
-    QAction *Search_Action   = new QAction(QIcon(":/image/search.png"), tr("Discover Radio Modules"), this);
-    QWidget *Space1           = new QWidget(this);
+    Add_Action      = new QAction(QIcon(":/image/add.png"), tr("Add Radio Module"), this);
+    Search_Action   = new QAction(QIcon(":/image/search.png"), tr("Discover Radio Modules"), this);
+    Space1           = new QWidget(this);
     Space1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    QAction *Config_Action   = new QAction(QIcon(":/image/config_perspective_selected.png"), tr("Updata working mode"), this);
-    QWidget *Space2           = new QWidget(this);
+    Space2           = new QWidget(this);
     Space2->setMinimumWidth(20);
-    Space2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-    QAction *Console_Action   = new QAction(QIcon(":/image/console_perspective_selected.png"), tr("Console working mode"), this);
-    QWidget *Space3           = new QWidget(this);
+    Space2->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    Config_Action   = new QAction(QIcon(":/image/config_perspective_selected.png"), tr("Updata working mode"), this);
+    Space3           = new QWidget(this);
     Space3->setMinimumWidth(20);
-    Space3->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-    QAction *Network_Action   = new QAction(QIcon(":/image/network_perspective_selected.png"), tr("Network working mode"), this);
-    QWidget *Space4           = new QWidget(this);
+    Space3->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    Console_Action   = new QAction(QIcon(":/image/console_perspective_selected.png"), tr("Console working mode"), this);
+    Space4           = new QWidget(this);
     Space4->setMinimumWidth(20);
-    Space4->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    Space4->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    Network_Action   = new QAction(QIcon(":/image/network_perspective_selected.png"), tr("Network working mode"), this);
+    Space5           = new QWidget(this);
+    Space5->setMinimumWidth(20);
+    Space5->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
     Tool_Bar = new QToolBar(this);
     Tool_Bar->setStyleSheet("QToolBar{border-style:outset}");
     Tool_Bar->setMovable(false);
@@ -124,14 +123,20 @@ void MainWindow::Creat_ToolBar()
     Tool_Bar->addAction(Add_Action);
     Tool_Bar->addAction(Search_Action);
     Tool_Bar->addWidget(Space1);
-    Tool_Bar->addAction(Console_Action);
     Tool_Bar->addWidget(Space2);
-    Tool_Bar->addAction(Config_Action);
+    Tool_Bar->addAction(Console_Action);
     Tool_Bar->addWidget(Space3);
-    Tool_Bar->addAction(Network_Action);
+    Tool_Bar->addAction(Config_Action);
     Tool_Bar->addWidget(Space4);
+    Tool_Bar->addAction(Network_Action);
+    Tool_Bar->addWidget(Space5);
 
     connect(Add_Action, &QAction::triggered, this, &MainWindow::Open_SerialDialog);
+
+    connect(Console_Action, &QAction::triggered, this, &MainWindow::Action_Choose_Console);
+    connect(Config_Action,  &QAction::triggered, this, &MainWindow::Action_Choose_Config);
+    connect(Network_Action, &QAction::triggered, this, &MainWindow::Action_Choose_Network);
+
     this->addToolBar(Tool_Bar);
 }
 
@@ -159,6 +164,7 @@ void MainWindow::Creat_CentralWidget()
     connect(this, &MainWindow::Signal_ModuleStateChange_ToConsoleWin, right_window->Console_Window, &ConsoleWindow::Slot_ModuleStateChange_FromMainWin);
     connect(right_window->Console_Window, &ConsoleWindow::Signal_StartStopTest_ToMainWin, this, &MainWindow::Slot_StartStopTest_FromConsoleWin);
     connect(&right_window->Console_Window->Para_Dialog, &ParaConfigDialog::Signal_Para_ToManWin, this, &MainWindow::Slot_Para_FromParaDlg);
+
 
     //定义分割器
     splitter = new QSplitter(Qt::Horizontal, this);
@@ -340,10 +346,36 @@ void MainWindow::Init_Excel()
 }
 
 
+/*窗体位置大小读取------------------------------------------------------------------------------------------------------------------*/
+void MainWindow::ReadSettings()
+{
+    QSettings settings("bandaostart", "N-CTU");
+
+    QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
+    QSize size = settings.value("size", QSize(400, 400)).toSize();
+
+    this->move(pos);
+    this->resize(size);
+}
+
+
+/*窗体位置大小读取-----------------------------------------------------------------------------------------------------------------*/
+void MainWindow::WriteSettings()
+{
+    QSettings settings("bandaostart", "N-CTU");
+    settings.setValue("pos", pos());
+    settings.setValue("size", size());
+}
+
+
+
+
 /*初始化窗体参数--------------------------------------------------------------------------------------------------------------------*/
 void MainWindow::Init_Window_Para()
 {
     Test_Run_State = NullState;
+
+    Excel_Open_Flag = false;
 
     DM_PortName = "";
     DP_PortName = "";
@@ -352,9 +384,15 @@ void MainWindow::Init_Window_Para()
     DMP_RtxPara.rx_num = 0;
     DMP_RtxPara.tx_num = 0;
 
+    Action_Choose_Flag = 0;
+
     right_window->Console_Window->Para_Dialog.Read_Para(ParaDataMin, ParaDataMax, NumParaRow);
 
     setAttribute(Qt::WA_DeleteOnClose);
+
+    //this->ReadSettings();
+
+
 }
 
 
@@ -865,6 +903,41 @@ void MainWindow::Open_SerialDialog()
 }
 
 
+/*Console 控件选择 槽函数----------------------------------------------------------------------------------------------------------*/
+void MainWindow::Action_Choose_Console()
+{
+    Action_Choose_Flag = 0;
+    this->right_window->Window_Choose(Action_Choose_Flag);
+
+    this->update();
+}
+
+
+/*Config 控件选择 槽函数----------------------------------------------------------------------------------------------------------*/
+void MainWindow::Action_Choose_Config()
+{
+    Action_Choose_Flag = 1;
+    this->right_window->Window_Choose(Action_Choose_Flag);
+
+    this->update();
+}
+
+
+/*Newwork 控件选择 槽函数----------------------------------------------------------------------------------------------------------*/
+void MainWindow::Action_Choose_Network()
+{
+    Action_Choose_Flag = 2;
+    this->update();
+}
+
+
+
+
+
+
+
+
+
 /*串口数据接收相应处理 槽函数-----------------------------------------------------------------------------------*/
 void MainWindow::Receive_SerialMessage(const QString &portname, unsigned char *rx_data, unsigned short rx_num)
 {
@@ -1010,6 +1083,13 @@ void MainWindow::Slot_StartStopTest_FromConsoleWin(const bool &state, const QStr
 {
     if (state)
     {
+        if (!Excel_Open_Flag)
+        {
+            //初始化EXCEL
+            Init_Excel();
+
+            Excel_Open_Flag = true;
+        }
         DM_PortName = dmport;
         DP_PortName = dpport;
 
@@ -2094,6 +2174,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QBrush   brush;
     QPen     pen;
     QPainter painter(this);
+    QPoint   points[5];
 
     pen.setStyle(Qt::SolidLine);
     pen.setColor(QColor(215,215,215));
@@ -2104,6 +2185,46 @@ void MainWindow::paintEvent(QPaintEvent *event)
     painter.setPen(pen);
     painter.setBrush(brush);
     painter.drawRect(Tool_Bar->x(), Tool_Bar->y(), Tool_Bar->width(), Tool_Bar->height());
+
+    switch (Action_Choose_Flag)
+    {
+        case 0:
+            points[0] = QPoint(Tool_Bar->x()+Space2->x()+10, Tool_Bar->y()+Space2->y()+10);
+            points[1] = QPoint(Tool_Bar->x()+Space2->x()+20, Tool_Bar->y()+Space2->y()-2);
+            points[2] = QPoint(Tool_Bar->x()+Space3->x()+10, Tool_Bar->y()+Space3->y()-2);
+            points[3] = QPoint(Tool_Bar->x()+Space3->x()+10, Tool_Bar->y()+Space3->y()+Space3->height()+1);
+            points[4] = QPoint(Tool_Bar->x()+Space2->x()+10, Tool_Bar->y()+Space2->y()+Space2->height()+1);
+        break;
+
+        case 1:
+            points[0] = QPoint(Tool_Bar->x()+Space3->x()+10, Tool_Bar->y()+Space3->y()+10);
+            points[1] = QPoint(Tool_Bar->x()+Space3->x()+20, Tool_Bar->y()+Space3->y()-2);
+            points[2] = QPoint(Tool_Bar->x()+Space4->x()+10, Tool_Bar->y()+Space4->y()-2);
+            points[3] = QPoint(Tool_Bar->x()+Space4->x()+10, Tool_Bar->y()+Space4->y()+Space4->height()+1);
+            points[4] = QPoint(Tool_Bar->x()+Space3->x()+10, Tool_Bar->y()+Space3->y()+Space3->height()+1);
+        break;
+
+        case 2:
+            points[0] = QPoint(Tool_Bar->x()+Space4->x()+10, Tool_Bar->y()+Space4->y()+10);
+            points[1] = QPoint(Tool_Bar->x()+Space4->x()+20, Tool_Bar->y()+Space4->y()-2);
+            points[2] = QPoint(Tool_Bar->x()+Space5->x()+10, Tool_Bar->y()+Space5->y()-2);
+            points[3] = QPoint(Tool_Bar->x()+Space5->x()+10, Tool_Bar->y()+Space5->y()+Space5->height()+1);
+            points[4] = QPoint(Tool_Bar->x()+Space4->x()+10, Tool_Bar->y()+Space4->y()+Space4->height()+1);
+        break;
+
+        default:
+        break;
+    }
+    pen.setStyle(Qt::SolidLine);
+    pen.setColor(QColor(255,255,255));
+
+    brush.setColor(QColor(255,255,255));
+    brush.setStyle(Qt::SolidPattern);
+
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.drawPolygon(points, 5);
+
 }
 
 
@@ -2115,11 +2236,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     delete Serial_Dialog;
 
-    //excel关闭
-//    WorkBook->dynamicCall("Save()");
-    WorkBook->dynamicCall("Close(Boolean)", false);     //关闭文件
-    Excel->dynamicCall("Quit(void)");                   //关闭exce
-    delete Excel;
+    if (Excel_Open_Flag)
+    {
+        //excel关闭
+    //    WorkBook->dynamicCall("Save()");
+        WorkBook->dynamicCall("Close(Boolean)", false);     //关闭文件
+        Excel->dynamicCall("Quit(void)");                   //关闭exce
+        delete Excel;
+    }
+
+    //this->WriteSettings();
 
     exit(0);
 }

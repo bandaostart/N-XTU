@@ -1,5 +1,4 @@
 #include "paraconfigdialog.h"
-#include "ui_paraconfigdialog.h"
 
 ParaConfigDialog::ParaConfigDialog(QWidget *parent) : QDialog(parent)
 {

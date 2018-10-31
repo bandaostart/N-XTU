@@ -49,15 +49,11 @@ void ConsoleWindow::Creat_TopToolBar()
     Start_Action   = new QAction(QIcon(":/image/network_start.png"), tr("Start radio test"), this);
     Config_Action  = new QAction(QIcon(":/image/preferences.png"), tr("Start recording the console session"), this);
     Refresh_Action = new QAction(QIcon(":/image/read_settings.png"), tr("Refresh Test Text"), this);
-    UpdataFw_Action = new QAction(QIcon(":/image/updatefw.png"), tr("Updata the Radio Firmware Library"), this);
-    Top_Space       = new QWidget(this);
-    Top_Space->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 
     Top_Tool_Bar->addAction(Start_Action);
     Top_Tool_Bar->addAction(Config_Action);
     Top_Tool_Bar->addAction(Refresh_Action);
-    Top_Tool_Bar->addWidget(Top_Space);
-    Top_Tool_Bar->addAction(UpdataFw_Action);
 
 
     connect(Start_Action, &QAction::triggered, this, &ConsoleWindow::Slot_StartStopTest_FromStartAction);

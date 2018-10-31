@@ -13,7 +13,7 @@
 uint8_t  Frame_ID = 0;
 
 //设备信息读取命令
-QVector<uint16_t> AT_TypeReq{VR, NI, AP, SH, SL, RI};
+QVector<uint16_t> AT_TypeReq{VR, NI, AP, SH, SL, RI, JP};
 
 
 //射频参数读取
@@ -84,19 +84,47 @@ uint16_t AT_Com_Req(uint16_t command, uint8_t frame_id, uint8_t *tx_buf)
     {
         XbeeApi_ATCom_t     *pXbeeApiAtCom;
 
-        pXbeeApiAtCom = (XbeeApi_ATCom_t *)tx_buf;
-        pXbeeApiAtCom->xbeeapi_header.start_byte      = API_START_DATA;
-        pXbeeApiAtCom->xbeeapi_header.length_byte_msb = (((XbeeApi_ATCom_len-3) >> 8) & 0xFF);
-        pXbeeApiAtCom->xbeeapi_header.length_byte_lsb = (((XbeeApi_ATCom_len-3) >> 0) & 0xFF);
-        pXbeeApiAtCom->xbeeapi_header.frame_type      = API_AT_COM;
+        if (command == 'JP')
+        {
+            pXbeeApiAtCom = (XbeeApi_ATCom_t *)tx_buf;
+            pXbeeApiAtCom->xbeeapi_header.start_byte      = API_START_DATA;
+            pXbeeApiAtCom->xbeeapi_header.length_byte_msb = (((XbeeApi_ATCom_len+5) >> 8) & 0xFF);
+            pXbeeApiAtCom->xbeeapi_header.length_byte_lsb = (((XbeeApi_ATCom_len+5) >> 0) & 0xFF);
+            pXbeeApiAtCom->xbeeapi_header.frame_type      = API_AT_COM;
 
-        pXbeeApiAtCom->frame_id                       = frame_id;
-        pXbeeApiAtCom->at_command[0]                  = ((command >> 8) & 0xFF);
-        pXbeeApiAtCom->at_command[1]                  = ((command >> 0) & 0xFF);
+            pXbeeApiAtCom->frame_id                       = frame_id;
+            pXbeeApiAtCom->at_command[0]                  = ((command >> 8) & 0xFF);
+            pXbeeApiAtCom->at_command[1]                  = ((command >> 0) & 0xFF);
 
-        tx_buf[XbeeApi_ATCom_len] = XbeePro_CheckSum((XbeeApi_ATCom_len-3), tx_buf+(XBeeApi_Header_Len-1));
+            tx_buf[XbeeApi_ATCom_len+0] = '*';
+            tx_buf[XbeeApi_ATCom_len+1] = '*';
+            tx_buf[XbeeApi_ATCom_len+2] = '$';
+            tx_buf[XbeeApi_ATCom_len+3] = '$';
+            tx_buf[XbeeApi_ATCom_len+4] = '$';
+            tx_buf[XbeeApi_ATCom_len+5] = '$';
+            tx_buf[XbeeApi_ATCom_len+6] = '*';
+            tx_buf[XbeeApi_ATCom_len+7] = '*';
 
-        return (XbeeApi_ATCom_len+1);
+            tx_buf[XbeeApi_ATCom_len+8] = XbeePro_CheckSum((XbeeApi_ATCom_len+5), tx_buf+(XBeeApi_Header_Len-1));
+
+            return (XbeeApi_ATCom_len+9);
+        }
+        else
+        {
+            pXbeeApiAtCom = (XbeeApi_ATCom_t *)tx_buf;
+            pXbeeApiAtCom->xbeeapi_header.start_byte      = API_START_DATA;
+            pXbeeApiAtCom->xbeeapi_header.length_byte_msb = (((XbeeApi_ATCom_len-3) >> 8) & 0xFF);
+            pXbeeApiAtCom->xbeeapi_header.length_byte_lsb = (((XbeeApi_ATCom_len-3) >> 0) & 0xFF);
+            pXbeeApiAtCom->xbeeapi_header.frame_type      = API_AT_COM;
+
+            pXbeeApiAtCom->frame_id                       = frame_id;
+            pXbeeApiAtCom->at_command[0]                  = ((command >> 8) & 0xFF);
+            pXbeeApiAtCom->at_command[1]                  = ((command >> 0) & 0xFF);
+
+            tx_buf[XbeeApi_ATCom_len] = XbeePro_CheckSum((XbeeApi_ATCom_len-3), tx_buf+(XBeeApi_Header_Len-1));
+
+            return (XbeeApi_ATCom_len+1);
+        }
     }
     else
     {
@@ -388,7 +416,7 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
                     temp_str += QString::number(rx_buf[XbeeApi_ATCom_Rsp_len+i] & 0xFF, 16).toUpper();
                 }
 
-                if (temp_str == "21A7")
+                if (temp_str != "5AAA")
                 {
                     module->Node_Type = "DM";
                     module->Text_Content[0] = "DM";
@@ -476,6 +504,13 @@ void AT_Com_RspType(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num)
             }
 
             case RI:                                                //射频初始化
+            {
+                module_deal->serialtxrxPara->tx_count = 0x00;
+
+                break;
+            }
+
+            case JP:                                                //跳转命令
             {
                 module_deal->serialtxrxPara->tx_count = 0x00;
 

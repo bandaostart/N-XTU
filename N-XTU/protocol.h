@@ -127,6 +127,8 @@
 
 #define         RR                                      CONVERSION('R', 'R')    //射频接收测试
 #define         RF                                      CONVERSION('R', 'F')    //接收测试完成
+#define         JP                                      CONVERSION('J', 'P')    //跳转命令
+
 
 
 #define API_START_DATA                                  0x7E                    //起始数据
@@ -585,7 +587,7 @@ typedef struct
 #define MODULE_AMMETER_RX_FUN             0x0B                                    //电流接收
 
 
-#define MODULE_TYPE_REQ_NUM               6
+#define MODULE_TYPE_REQ_NUM               7
 #define MODULE_READ_ID_NUM                3
 #define MODULE_RF_TX_NUM                  3
 #define MODULE_RF_RX_NUM                  3

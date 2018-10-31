@@ -16,6 +16,7 @@
 #include <QFileInfo>
 #include <QDate>
 #include <QDateTime>
+#include <QSettings>
 #include "leftwindow.h"
 #include "rightwindow.h"
 #include "serialdialog.h"
@@ -40,6 +41,19 @@ signals:
 
 private:
     QToolBar       *Tool_Bar;
+    QAction        *Add_Action;
+    QAction        *Search_Action;
+    QAction        *Config_Action;
+    QAction        *Console_Action;
+    QAction        *Network_Action;
+    QWidget        *Space1;
+    QWidget        *Space2;
+    QWidget        *Space3;
+    QWidget        *Space4;
+    QWidget        *Space5;
+    unsigned char  Action_Choose_Flag;
+
+
     QMenuBar       *Menu_Bar;
 
     SearchDialog   search_dialog;
@@ -76,8 +90,9 @@ private:
     unsigned int StartColumn;
     unsigned int AllRowsNum;
     unsigned int AllColumnsNum;
+    bool         Excel_Open_Flag;
 
-     enum {NumParaRow = 7};
+    enum {NumParaRow = 7};
     float       ParaDataMin[NumParaRow];
     float       ParaDataMax[NumParaRow];
 
@@ -97,20 +112,25 @@ private:
 
     bool Port_Send_Deal(ModuleDeal *module_deal);
     void Port_Receive_Deal(ModuleDeal *module_deal, uint8_t *rx_buf, uint16_t rx_num);
-
     void Hash_Set_Deal(QString portname, uint8_t type_fun, uint8_t type_para);
-
     void Excel_Node_Save(Excel_Save_Para &excel_save_para);
+
+    void ReadSettings();
+    void WriteSettings();
 
 
 private slots:
     void Open_SerialDialog();
+    void Action_Choose_Console();
+    void Action_Choose_Config();
+    void Action_Choose_Network();
     void Close_ModuleWindow(const QString &portname);
     void MousePress_ModuleWindow(const QString &portname, const QString &moduletype);
     void Receive_SerialMessage(const QString &portname,  unsigned char *rx_data,  unsigned short rx_num);
     void Send_SerialMessage();
     void Close_SearchDialog(const QString &portname);
     void Slot_TestRunTimer();
+
 
     void Slot_StartStopTest_FromConsoleWin(const bool &state, const QString &dmport, const QString &dpport);
 

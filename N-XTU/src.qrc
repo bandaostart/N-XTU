@@ -72,5 +72,7 @@
         <file>image/info.png</file>
         <file>image/console_perspective_selected.png</file>
         <file>image/network_perspective_selected.png</file>
+        <file>image/gear.png</file>
+        <file>image/load_profile.png</file>
     </qresource>
 </RCC>

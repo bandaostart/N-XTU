@@ -75,8 +75,6 @@ public:
     QAction     *Start_Action;
     QAction     *Config_Action;
     QAction     *Refresh_Action;
-    QAction     *UpdataFw_Action;
-    QWidget     *Top_Space;
 
     QToolBar    *Left_Tool_Bar;
     QWidget     *Space[4];

@@ -10,6 +10,7 @@ INPUT(
 ./release\protocol.o
 ./release\searchdialog.o
 ./release\paraconfigdialog.o
+./release\updatawindow.o
 ./release\qrc_src.o
 ./release\moc_mainwindow.o
 ./release\moc_serialthread.o
@@ -20,4 +21,5 @@ INPUT(
 ./release\moc_modulewindow.o
 ./release\moc_searchdialog.o
 ./release\moc_paraconfigdialog.o
+./release\moc_updatawindow.o
 );
